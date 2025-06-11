@@ -3,7 +3,7 @@ import SwiftUI
 class Pawn: Piece {
     init(isRed: Bool, position: Position) {
         let imageName = isRed ? "red_pawn" : "blue_pawn"
-        super.init(imageName: imageName, isRed: isRed, position: position)
+        super.init(imageName: imageName, isRed: isRed, position: position, size: .small)
     }
     
     override func validMoves(board: Board) -> [Position] {

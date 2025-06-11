@@ -3,7 +3,7 @@ import SwiftUI
 class Chariot: Piece {
     init(isRed: Bool, position: Position) {
         let imageName = isRed ? "red_chariot" : "blue_chariot"
-        super.init(imageName: imageName, isRed: isRed, position: position)
+        super.init(imageName: imageName, isRed: isRed, position: position, size:.medium)
     }
     
     override func validMoves(board: Board) -> [Position] {

@@ -3,7 +3,7 @@ import SwiftUI
 class General: Piece {
     init(isRed: Bool, position: Position) {
         let imageName = isRed ? "red_general" : "blue_general"
-        super.init(imageName: imageName, isRed: isRed, position: position)
+        super.init(imageName: imageName, isRed: isRed, position: position, size: .large)
     }
     
     override func validMoves(board: Board) -> [Position] {

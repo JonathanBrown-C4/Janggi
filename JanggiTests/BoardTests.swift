@@ -421,4 +421,74 @@ final class BoardTests: XCTestCase {
         XCTAssertNotNil(board.pieces[9][7], "Blue horse should be at (9,7)")
         XCTAssertNotNil(board.pieces[9][8], "Blue chariot should be at (9,8)")
     }
+
+    func testInvalidPieceMovement() {
+        // Test moving a piece to an invalid position
+        let fromPos = Position(row: 0, col: 0) // Red chariot
+        let toPos = Position(row: 2, col: 2) // Invalid position for chariot
+        let pieceBeforeMove = board.pieces[fromPos.row][fromPos.col]
+        let turnBeforeMove = board.isRedTurn
+        board.movePiece(from: fromPos, to: toPos)
+        XCTAssertTrue(board.pieces[fromPos.row][fromPos.col] === pieceBeforeMove, "Piece should not move to invalid position")
+        XCTAssertEqual(board.isRedTurn, turnBeforeMove, "Turn should not change after invalid move")
+    }
+
+    func testMultipleCaptures() {
+        // Setup multiple capture scenario
+        let redPawnPos = Position(row: 3, col: 0)
+        let bluePawnPos1 = Position(row: 4, col: 1)
+        let bluePawnPos2 = Position(row: 4, col: 2)
+        let bluePawn1 = Pawn(isRed: false, position: bluePawnPos1)
+        let bluePawn2 = Pawn(isRed: false, position: bluePawnPos2)
+        board.pieces[4][1] = bluePawn1
+        board.pieces[4][2] = bluePawn2
+
+        // Perform captures
+        let redPawn = board.pieces[redPawnPos.row][redPawnPos.col]
+        board.movePiece(from: redPawnPos, to: bluePawnPos1)
+        board.movePiece(from: bluePawnPos1, to: bluePawnPos2)
+        XCTAssertTrue(board.capturedBluePieces.contains { $0 === bluePawn1 }, "First captured piece should be added to captured pieces")
+        XCTAssertTrue(board.capturedBluePieces.contains { $0 === bluePawn2 }, "Second captured piece should be added to captured pieces")
+    }
+
+    func testGameStateEdgeCases() {
+        // Test simultaneous check and checkmate conditions
+        // Setup a scenario where a piece can both check and checkmate
+        let redChariotPos = Position(row: 0, col: 0)
+        let blueGeneralPos = Position(row: 9, col: 4)
+        let redChariot = board.pieces[redChariotPos.row][redChariotPos.col]
+        board.movePiece(from: redChariotPos, to: Position(row: 8, col: 4))
+        XCTAssertTrue(board.isGeneralInCheck(for: .blue), "Blue general should be in check")
+        XCTAssertTrue(board.isCheckmate(for: .blue), "Game should be in checkmate state")
+    }
+
+    func testPieceInteraction() {
+        // Test a piece blocking another piece's movement
+        let redPawnPos = Position(row: 3, col: 0)
+        let bluePawnPos = Position(row: 4, col: 0)
+        let bluePawn = Pawn(isRed: false, position: bluePawnPos)
+        board.pieces[4][0] = bluePawn
+        let redPawn = board.pieces[redPawnPos.row][redPawnPos.col]
+        board.movePiece(from: redPawnPos, to: bluePawnPos)
+        XCTAssertTrue(board.pieces[bluePawnPos.row][bluePawnPos.col] === redPawn, "Red pawn should capture blue pawn")
+    }
+
+    func testBoardStatePersistence() {
+        // Test that the board state is correctly maintained after multiple moves and captures
+        let redPawnPos = Position(row: 3, col: 0)
+        let bluePawnPos = Position(row: 4, col: 0)
+        let bluePawn = Pawn(isRed: false, position: bluePawnPos)
+        board.pieces[4][0] = bluePawn
+        let redPawn = board.pieces[redPawnPos.row][redPawnPos.col]
+        board.movePiece(from: redPawnPos, to: bluePawnPos)
+        XCTAssertTrue(board.capturedBluePieces.contains { $0 === bluePawn }, "Captured piece should be added to captured pieces")
+        XCTAssertNil(board.pieces[redPawnPos.row][redPawnPos.col], "Original position should be empty")
+    }
+
+    func testErrorHandling() {
+        // Test error handling for invalid inputs or unexpected states
+        let invalidPos = Position(row: 10, col: 10)
+        board.movePiece(from: invalidPos, to: Position(row: 0, col: 0))
+        XCTAssertEqual(board.gameState, .playing, "Game state should remain unchanged after invalid move")
+    }
 } 

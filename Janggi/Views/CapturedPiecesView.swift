@@ -25,4 +25,8 @@ struct CapturedPiecesView: View {
             .cornerRadius(10)
         }
     }
+}
+
+#Preview {
+    CapturedPiecesView(pieces: [], color: .red)
 } 
