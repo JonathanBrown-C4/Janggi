@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 // Direction enum for piece movement
 enum Direction {
@@ -42,6 +43,7 @@ protocol PieceProtocol {
     var color: PieceColor { get }
     var type: PieceType { get }
     var currentPosition: Position { get set }
+    var size: PieceSize { get }
     
     // Returns all valid moves for the piece from its current position
     func validMoves(board: Board) -> [Position]
@@ -70,11 +72,13 @@ class Piece: PieceProtocol {
         }
     }
     var currentPosition: Position
+    var size: PieceSize
     
-    init(imageName: String, isRed: Bool, position: Position) {
+    init(imageName: String, isRed: Bool, position: Position, size: PieceSize) {
         self.imageName = imageName
         self.isRed = isRed
         self.currentPosition = position
+        self.size = size
     }
     
     func validMoves(board: Board) -> [Position] {
@@ -97,4 +101,6 @@ class Piece: PieceProtocol {
         }
         return false
     }
-} 
+}
+
+// Remove redundant class definitions for each piece type 
