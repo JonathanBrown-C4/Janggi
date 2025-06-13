@@ -11,8 +11,8 @@ struct PieceGridView: View {
                 if let piece = board.pieces[row][col] {
                     PieceView(piece: piece)
                         .position(
-                            x: CGFloat(col) * squareSize + squareSize/2,
-                            y: CGFloat(row) * squareSize + squareSize/2
+                            x: CGFloat(col) * squareSize,
+                            y: CGFloat(row) * squareSize
                         )
                         .onTapGesture {
                             onSquareTap(Position(row: row, col: col))
