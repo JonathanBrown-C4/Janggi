@@ -9,7 +9,7 @@ struct SquareView: View {
     
     var body: some View {
         Rectangle()
-            .stroke(Color.black, lineWidth: 1)
+            .fill(Color.clear)
             .frame(width: squareSize, height: squareSize)
             .background(
                 Group {
