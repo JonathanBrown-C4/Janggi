@@ -5,11 +5,12 @@ struct BoardGridView: View {
     let squareSize: CGFloat
     let onSquareTap: (Position) -> Void
     
-    // Star point positions (column, row) for 8x9 Janggi board
+    // Star point positions (row, col) as intersection points
     private let starPoints: [(Int, Int)] = [
-        (1,2), (4,2), (6,2),
-        (1,4), (4,4), (6,4),
-        (1,6), (4,6), (6,6)
+        (2,1), (2,7),
+        (3,0), (3,2), (3,4), (3,6), (3,8),
+        (6,0), (6,2), (6,4), (6,6), (6,8),
+        (7,1), (7,7)
     ]
 
     var body: some View {
@@ -44,7 +45,7 @@ struct BoardGridView: View {
                     Circle()
                         .fill(Color.black)
                         .frame(width: 16, height: 16)
-                        .position(x: CGFloat(point.0) * cellWidth, y: CGFloat(point.1) * cellHeight)
+                        .position(x: CGFloat(point.1) * cellWidth, y: CGFloat(point.0) * cellHeight)
                 }
                 // Overlay pieces and tap logic
                 VStack(spacing: 0) {
