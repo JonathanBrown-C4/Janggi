@@ -6,25 +6,25 @@ struct BoardView: View {
     
     var body: some View {
         GeometryReader { geo in
-            let columns = 8
-            let rows = 9
-            let width = geo.size.width
-            let height = geo.size.height
-            let cellWidth = width / CGFloat(columns)
-            let cellHeight = height / CGFloat(rows)
+            let columns = 9
+            let rows = 10
+            let cellSize = min(geo.size.width / CGFloat(columns - 1), geo.size.height / CGFloat(rows - 1))
+            let grid = GridGeometry(columns: columns, rows: rows, cellSize: cellSize)
             ZStack {
                 // Board background
                 Color(red: 0.8, green: 0.7, blue: 0.5)
-                // Grid, star points, and pieces
-                BoardGridView(board: board, squareSize: cellWidth, onSquareTap: handleSquareTap)
+                // Grid, star points, and tap overlays
+                BoardGridView(board: board, grid: grid, onSquareTap: handleSquareTap)
                 // Top palace: center at (1,4) in grid lines
-                PalaceView(size: min(cellWidth, cellHeight) * 2)
-                    .frame(width: cellWidth * 2, height: cellHeight * 2)
-                    .position(x: cellWidth * 4, y: cellHeight * 1)
+                PalaceView(size: cellSize * 2)
+                    .frame(width: cellSize * 2, height: cellSize * 2)
+                    .position(x: cellSize * 4, y: cellSize * 1)
                 // Bottom palace: center at (8,4) in grid lines
-                PalaceView(size: min(cellWidth, cellHeight) * 2)
-                    .frame(width: cellWidth * 2, height: cellHeight * 2)
-                    .position(x: cellWidth * 4, y: cellHeight * 8)
+                PalaceView(size: cellSize * 2)
+                    .frame(width: cellSize * 2, height: cellSize * 2)
+                    .position(x: cellSize * 4, y: cellSize * 8)
+                // Pieces (should be on top)
+                PieceGridView(board: board, grid: grid, onSquareTap: handleSquareTap)
             }
         }
         .padding()

@@ -21,8 +21,14 @@ struct PieceView: View {
         Image(piece.imageName)
             .resizable()
             .scaledToFit()
+            .padding(6)
             .frame(width: piece.size.size, height: piece.size.size)
+            .background(Hexagon().fill(Color.white))
             .clipShape(Hexagon())
+            .overlay(
+                Hexagon()
+                    .stroke(Color(.darkGray), lineWidth: 2)
+            )
     }
 }
 

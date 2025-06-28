@@ -3,18 +3,25 @@ import SwiftUI
 struct GameView: View {
     @StateObject private var board = Board()
     private let squareSize: CGFloat = 40
+    @State private var showCapturedOverlay = false
     
     var body: some View {
-        HStack(spacing: 20) {
-            // Captured pieces for Red
-            CapturedPiecesView(pieces: board.capturedRedPieces, color: .red)
-            
-            // Main game board
-            VStack {
+        ZStack {
+            VStack(spacing: 0) {
+                // Top bar with expand/collapse button
+                HStack {
+                    Spacer()
+                    Button(action: { withAnimation { showCapturedOverlay.toggle() } }) {
+                        Image(systemName: showCapturedOverlay ? "chevron.up" : "chevron.down")
+                        Text(showCapturedOverlay ? "Hide Captured" : "Show Captured")
+                    }
+                    .padding(.top, 8)
+                    .padding(.trailing, 16)
+                }
+                // Title
                 Text("Janggi")
                     .font(.largeTitle)
-                    .padding()
-                
+                    .padding(.top, 8)
                 // Game state display
                 Group {
                     switch board.gameState {
@@ -37,10 +44,16 @@ struct GameView: View {
                     }
                 }
                 .padding(.bottom)
-                
-                // Game board
-                BoardView(board: board, squareSize: squareSize)
-                
+                // Board with border, background, and padding
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(red: 0.8, green: 0.7, blue: 0.5))
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(.darkGray), lineWidth: 6)
+                    BoardView(board: board, squareSize: squareSize)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .padding(24)
                 // Reset button
                 if board.gameState == .checkmate || board.gameState == .stalemate {
                     Button("New Game") {
@@ -54,25 +67,57 @@ struct GameView: View {
                     .padding()
                 }
             }
-            
-            // Captured pieces for Blue
-            CapturedPiecesView(pieces: board.capturedBluePieces, color: .blue)
+            // Captured pieces overlay
+            if showCapturedOverlay {
+                Color.black.opacity(0.4)
+                    .edgesIgnoringSafeArea(.all)
+                    .onTapGesture { withAnimation { showCapturedOverlay = false } }
+                VStack(spacing: 24) {
+                    Text("Captured Pieces")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.top, 32)
+                    HStack(spacing: 40) {
+                        VStack {
+                            Text("Red's Captured")
+                                .foregroundColor(.red)
+                            CapturedPiecesView(pieces: board.capturedRedPieces, color: .red)
+                        }
+                        VStack {
+                            Text("Blue's Captured")
+                                .foregroundColor(.blue)
+                            CapturedPiecesView(pieces: board.capturedBluePieces, color: .blue)
+                        }
+                    }
+                    Spacer()
+                    Button(action: { withAnimation { showCapturedOverlay = false } }) {
+                        Text("Close")
+                            .font(.title2)
+                            .padding()
+                            .background(Color.white.opacity(0.8))
+                            .cornerRadius(10)
+                    }
+                    .padding(.bottom, 32)
+                }
+                .frame(maxWidth: .infinity)
+                .background(Color.black.opacity(0.7))
+                .cornerRadius(20)
+                .padding(.horizontal, 24)
+                .transition(.move(edge: .top))
+            }
         }
         .padding()
     }
     
     private func handleSquareTap(at position: Position) {
         if let selectedPiece = board.selectedPiece {
-            // If a piece is already selected, try to move it
             if board.validMoves.contains(where: { $0.row == position.row && $0.col == position.col }) {
                 board.movePiece(from: selectedPiece, to: position)
             } else {
-                // If the move is invalid, deselect the piece
                 board.selectedPiece = nil
                 board.validMoves = []
             }
         } else {
-            // If no piece is selected, try to select one
             board.selectPiece(at: position)
         }
     }
