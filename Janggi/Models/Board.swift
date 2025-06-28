@@ -69,7 +69,7 @@ class Board: ObservableObject {
         
         // Setup Blue pieces
         // General
-        pieces[9][4] = General(isRed: false, position: Position(row: 9, col: 4))
+        pieces[8][4] = General(isRed: false, position: Position(row: 8, col: 4))
         
         // Guards
         pieces[9][3] = Guard(isRed: false, position: Position(row: 9, col: 3))
