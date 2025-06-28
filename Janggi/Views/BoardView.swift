@@ -12,23 +12,28 @@ struct BoardView: View {
             let grid = GridGeometry(columns: columns, rows: rows, cellSize: cellSize)
             let boardWidth = cellSize * CGFloat(columns - 1)
             let boardHeight = cellSize * CGFloat(rows - 1)
-            ZStack {
-                // Board background
-                Color(red: 0.8, green: 0.7, blue: 0.5)
-                // Grid, star points, and tap overlays
-                BoardGridView(board: board, grid: grid, onSquareTap: handleSquareTap)
-                // Top palace: center at (1,4) in grid lines
-                PalaceView(size: cellSize * 2)
-                    .frame(width: cellSize * 2, height: cellSize * 2)
-                    .position(x: cellSize * 4, y: cellSize * 1)
-                // Bottom palace: center at (8,4) in grid lines
-                PalaceView(size: cellSize * 2)
-                    .frame(width: cellSize * 2, height: cellSize * 2)
-                    .position(x: cellSize * 4, y: cellSize * 8)
-                // Pieces (should be on top)
-                PieceGridView(board: board, grid: grid, onSquareTap: handleSquareTap)
+            VStack {
+                Spacer()
+                ZStack {
+                    // Board background
+                    Color(red: 0.8, green: 0.7, blue: 0.5)
+                    // Grid, star points, and tap overlays
+                    BoardGridView(board: board, grid: grid, onSquareTap: handleSquareTap)
+                    // Top palace: center at (1,4) in grid lines
+                    PalaceView(size: cellSize * 2)
+                        .frame(width: cellSize * 2, height: cellSize * 2)
+                        .position(x: cellSize * 4, y: cellSize * 1)
+                    // Bottom palace: center at (8,4) in grid lines
+                    PalaceView(size: cellSize * 2)
+                        .frame(width: cellSize * 2, height: cellSize * 2)
+                        .position(x: cellSize * 4, y: cellSize * 8)
+                    // Pieces (should be on top)
+                    PieceGridView(board: board, grid: grid, onSquareTap: handleSquareTap)
+                }
+                .frame(width: boardWidth, height: boardHeight)
+                Spacer()
             }
-            .frame(width: boardWidth, height: boardHeight, alignment: .top)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .padding()
     }
