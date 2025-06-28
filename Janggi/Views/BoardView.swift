@@ -10,6 +10,8 @@ struct BoardView: View {
             let rows = 10
             let cellSize = min(geo.size.width / CGFloat(columns - 1), geo.size.height / CGFloat(rows - 1))
             let grid = GridGeometry(columns: columns, rows: rows, cellSize: cellSize)
+            let boardWidth = cellSize * CGFloat(columns - 1)
+            let boardHeight = cellSize * CGFloat(rows - 1)
             ZStack {
                 // Board background
                 Color(red: 0.8, green: 0.7, blue: 0.5)
@@ -26,6 +28,7 @@ struct BoardView: View {
                 // Pieces (should be on top)
                 PieceGridView(board: board, grid: grid, onSquareTap: handleSquareTap)
             }
+            .frame(width: boardWidth, height: boardHeight, alignment: .top)
         }
         .padding()
     }
