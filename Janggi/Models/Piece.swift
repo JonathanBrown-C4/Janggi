@@ -7,6 +7,11 @@ enum Direction {
     case upLeft, upRight, downLeft, downRight
 }
 
+struct MovementRule {
+    let direction: Direction
+    let maxDistance: Int // 0 means unlimited
+}
+
 // Position struct to represent board coordinates
 struct Position: Equatable {
     let row: Int
@@ -44,12 +49,7 @@ protocol PieceProtocol {
     var type: PieceType { get }
     var currentPosition: Position { get set }
     var size: PieceSize { get }
-    
-    // Returns all valid moves for the piece from its current position
-    func validMoves(board: Board) -> [Position]
-    
-    // Returns true if the move is valid
-    func canMove(to position: Position, board: Board) -> Bool
+    var movementRules: [MovementRule] { get }
 }
 
 // Base class for all pieces
@@ -73,20 +73,15 @@ class Piece: PieceProtocol {
     }
     var currentPosition: Position
     var size: PieceSize
+    var movementRules: [MovementRule] {
+        return []
+    }
     
     init(imageName: String, isRed: Bool, position: Position, size: PieceSize) {
         self.imageName = imageName
         self.isRed = isRed
         self.currentPosition = position
         self.size = size
-    }
-    
-    func validMoves(board: Board) -> [Position] {
-        return []
-    }
-    
-    func canMove(to position: Position, board: Board) -> Bool {
-        return validMoves(board: board).contains(position)
     }
     
     // Helper method to check if a position is within board bounds

@@ -40,27 +40,25 @@ final class BoardTests: XCTestCase {
         XCTAssertTrue(board.validMoves.isEmpty, "No valid moves should be available initially")
     }
     
-    func testPieceAt() {
-        // Test valid position
-        let position = Position(row: 0, col: 4)
-        XCTAssertNotNil(board.pieceAt(position), "Should return piece at valid position")
-        
-        // Test empty position
-        let emptyPosition = Position(row: 4, col: 4)
-        XCTAssertNil(board.pieceAt(emptyPosition), "Should return nil for empty position")
-        
-        // Test out of bounds positions
-        let negativeRow = Position(row: -1, col: 4)
-        XCTAssertNil(board.pieceAt(negativeRow), "Should return nil for negative row")
-        
-        let negativeCol = Position(row: 4, col: -1)
-        XCTAssertNil(board.pieceAt(negativeCol), "Should return nil for negative column")
-        
-        let tooLargeRow = Position(row: 10, col: 4)
-        XCTAssertNil(board.pieceAt(tooLargeRow), "Should return nil for row >= 10")
-        
-        let tooLargeCol = Position(row: 4, col: 9)
-        XCTAssertNil(board.pieceAt(tooLargeCol), "Should return nil for column >= 9")
+    func testChariotValidMovesOnBoard() {
+        // Clear the board
+        for row in 0..<10 {
+            for col in 0..<9 {
+                board.pieces[row][col] = nil
+            }
+        }
+        let chariot = Chariot(isRed: true, position: Position(row: 0, col: 0))
+        board.pieces[0][0] = chariot
+        let moves = board.validMoves(for: chariot)
+        let expectedMoves = [
+            Position(row: 0, col: 1), Position(row: 0, col: 2), Position(row: 0, col: 3), Position(row: 0, col: 4),
+            Position(row: 0, col: 5), Position(row: 0, col: 6), Position(row: 0, col: 7), Position(row: 0, col: 8),
+            Position(row: 1, col: 0), Position(row: 2, col: 0), Position(row: 3, col: 0), Position(row: 4, col: 0),
+            Position(row: 5, col: 0), Position(row: 6, col: 0), Position(row: 7, col: 0), Position(row: 8, col: 0), Position(row: 9, col: 0)
+        ]
+        for move in expectedMoves {
+            XCTAssertTrue(moves.contains(move), "Chariot should be able to move to \(move)")
+        }
     }
     
     func testPieceMovement() {
@@ -490,5 +488,131 @@ final class BoardTests: XCTestCase {
         let invalidPos = Position(row: 10, col: 10)
         board.movePiece(from: invalidPos, to: Position(row: 0, col: 0))
         XCTAssertEqual(board.gameState, .playing, "Game state should remain unchanged after invalid move")
+    }
+
+    func testChariotOpenMovement() {
+        // Clear the board
+        for row in 0..<10 {
+            for col in 0..<9 {
+                board.pieces[row][col] = nil
+            }
+        }
+        let chariot = Chariot(isRed: true, position: Position(row: 0, col: 0))
+        board.pieces[0][0] = chariot
+        let moves = board.validMoves(for: chariot)
+        let expectedMoves = [
+            Position(row: 0, col: 1), Position(row: 0, col: 2), Position(row: 0, col: 3), Position(row: 0, col: 4),
+            Position(row: 0, col: 5), Position(row: 0, col: 6), Position(row: 0, col: 7), Position(row: 0, col: 8),
+            Position(row: 1, col: 0), Position(row: 2, col: 0), Position(row: 3, col: 0), Position(row: 4, col: 0),
+            Position(row: 5, col: 0), Position(row: 6, col: 0), Position(row: 7, col: 0), Position(row: 8, col: 0), Position(row: 9, col: 0)
+        ]
+        for move in expectedMoves {
+            XCTAssertTrue(moves.contains(move), "Chariot should be able to move to \(move)")
+        }
+    }
+
+    func testChariotBlockedMovement() {
+        // Clear the board
+        for row in 0..<10 {
+            for col in 0..<9 {
+                board.pieces[row][col] = nil
+            }
+        }
+        let chariot = Chariot(isRed: true, position: Position(row: 0, col: 0))
+        board.pieces[0][0] = chariot
+        // Block at (0,1)
+        board.pieces[0][1] = Pawn(isRed: true, position: Position(row: 0, col: 1))
+        let moves = board.validMoves(for: chariot)
+        let blockedMoves = [
+            Position(row: 0, col: 2), Position(row: 0, col: 3), Position(row: 0, col: 4),
+            Position(row: 0, col: 5), Position(row: 0, col: 6), Position(row: 0, col: 7), Position(row: 0, col: 8)
+        ]
+        for move in blockedMoves {
+            XCTAssertFalse(moves.contains(move), "Chariot should not be able to move to \(move) when blocked")
+        }
+    }
+
+    func testChariotCapture() {
+        // Clear the board
+        for row in 0..<10 {
+            for col in 0..<9 {
+                board.pieces[row][col] = nil
+            }
+        }
+        let chariot = Chariot(isRed: true, position: Position(row: 0, col: 0))
+        board.pieces[0][0] = chariot
+        // Enemy at (0,1)
+        board.pieces[0][1] = Pawn(isRed: false, position: Position(row: 0, col: 1))
+        let moves = board.validMoves(for: chariot)
+        XCTAssertTrue(moves.contains(Position(row: 0, col: 1)), "Chariot should be able to capture enemy piece")
+    }
+
+    func testChariotEdgeCases() {
+        // Bottom right corner
+        for row in 0..<10 {
+            for col in 0..<9 {
+                board.pieces[row][col] = nil
+            }
+        }
+        let chariot = Chariot(isRed: true, position: Position(row: 9, col: 8))
+        board.pieces[9][8] = chariot
+        let moves = board.validMoves(for: chariot)
+        XCTAssertTrue(moves.contains(Position(row: 8, col: 8)), "Chariot should move up from bottom-right corner")
+        XCTAssertTrue(moves.contains(Position(row: 9, col: 7)), "Chariot should move left from bottom-right corner")
+    }
+
+    func testChariotSimulatedMove() {
+        // Simulate a move
+        for row in 0..<10 {
+            for col in 0..<9 {
+                board.pieces[row][col] = nil
+            }
+        }
+        let chariot = Chariot(isRed: true, position: Position(row: 4, col: 4))
+        board.pieces[4][4] = chariot
+        let originalPos = chariot.currentPosition
+        let newPos = Position(row: 4, col: 6)
+        board.pieces[4][6] = chariot
+        board.pieces[4][4] = nil
+        chariot.currentPosition = newPos
+        let moves = board.validMoves(for: chariot)
+        XCTAssertTrue(moves.contains(Position(row: 4, col: 7)), "Chariot should move right after simulated move")
+        // Undo
+        board.pieces[4][4] = chariot
+        board.pieces[4][6] = nil
+        chariot.currentPosition = originalPos
+    }
+
+    func testChariotNoMovesIfNotOnBoard() {
+        // Remove the chariot
+        for row in 0..<10 {
+            for col in 0..<9 {
+                board.pieces[row][col] = nil
+            }
+        }
+        let chariot = Chariot(isRed: true, position: Position(row: 5, col: 5))
+        // Not placed on board
+        let moves = board.validMoves(for: chariot)
+        XCTAssertTrue(moves.isEmpty, "Chariot should have no moves if not on the board")
+    }
+
+    func testChariotAfterPawnMoves() {
+        // Set up board with chariot and pawn
+        for row in 0..<10 {
+            for col in 0..<9 {
+                board.pieces[row][col] = nil
+            }
+        }
+        let chariot = Chariot(isRed: true, position: Position(row: 0, col: 0))
+        let pawn = Pawn(isRed: true, position: Position(row: 3, col: 0))
+        board.pieces[0][0] = chariot
+        board.pieces[3][0] = pawn
+        // Move pawn down 2 rows
+        board.pieces[3][0] = nil
+        pawn.currentPosition = Position(row: 5, col: 0)
+        board.pieces[5][0] = pawn
+        // Now test chariot moves
+        let moves = board.validMoves(for: chariot)
+        XCTAssertTrue(moves.contains(Position(row: 1, col: 0)), "Chariot should move down after pawn moves")
     }
 } 

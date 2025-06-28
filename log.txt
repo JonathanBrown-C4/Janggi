@@ -1,0 +1,25 @@
+
+Checking for bikjang...
+Found piece between generals
+
+Checking for stalemate...
+
+Checking if red general is in check...
+red general position: Position(row: 1, col: 4)
+Checking piece: Pawn at (0, 8), address: 0x00006000017262c0
+Before validMoves for piece at (0, 8)
+After validMoves for piece at (0, 8)
+Checking piece: Pawn at (6, 8), address: 0x0000600001726340
+Before validMoves for piece at (6, 8)
+After validMoves for piece at (6, 8)
+Checking piece: Cannon at (7, 1), address: 0x0000600001726380
+Before validMoves for piece at (7, 1)
+After validMoves for piece at (7, 1)
+Checking piece: Cannon at (7, 7), address: 0x0000600001727e00
+Before validMoves for piece at (7, 7)
+After validMoves for piece at (7, 7)
+Checking piece: General at (8, 4), address: 0x0000600001724700
+Before validMoves for piece at (8, 4)
+After validMoves for piece at (8, 4)
+Checking piece: Chariot at (9, 0), address: 0x0000600001727b40
+Before validMoves for piece at (9, 0)

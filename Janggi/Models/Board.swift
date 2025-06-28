@@ -55,8 +55,8 @@ class Board: ObservableObject {
         pieces[0][7] = Horse(isRed: true, position: Position(row: 0, col: 7))
         
         // Chariots
-        pieces[0][0] = Chariot(isRed: true, position: Position(row: 0, col: 0))
-        pieces[0][8] = Chariot(isRed: true, position: Position(row: 0, col: 8))
+        pieces[0][0] = Chariot(isRed: true, isLeft: true)
+        pieces[0][8] = Chariot(isRed: true, isLeft: false)
         
         // Cannons
         pieces[2][1] = Cannon(isRed: true, position: Position(row: 2, col: 1))
@@ -84,8 +84,8 @@ class Board: ObservableObject {
         pieces[9][7] = Horse(isRed: false, position: Position(row: 9, col: 7))
         
         // Chariots
-        pieces[9][0] = Chariot(isRed: false, position: Position(row: 9, col: 0))
-        pieces[9][8] = Chariot(isRed: false, position: Position(row: 9, col: 8))
+        pieces[9][0] = Chariot(isRed: false, isLeft: true)
+        pieces[9][8] = Chariot(isRed: false, isLeft: false)
         
         // Cannons
         pieces[7][1] = Cannon(isRed: false, position: Position(row: 7, col: 1))
@@ -154,7 +154,7 @@ class Board: ObservableObject {
         }
         
         selectedPiece = position
-        validMoves = piece.validMoves(board: self)
+        validMoves = validMoves(for: piece)
     }
     
     func updateGameState() {
@@ -219,9 +219,11 @@ class Board: ObservableObject {
         for row in 0..<10 {
             for col in 0..<9 {
                 if let piece = pieceAt(Position(row: row, col: col)), piece.isRed == isOpponentRed {
-                    // Create a local copy of the position to avoid any potential threading issues
+                    print("Checking piece: \(type(of: piece)) at (\(row), \(col)), address: \(Unmanaged.passUnretained(piece).toOpaque())")
                     let currentGeneralPos = generalPos
-                    let moves = piece.validMoves(board: self)
+                    print("Before validMoves for piece at (\(row), \(col))")
+                    let moves = validMoves(for: piece)
+                    print("After validMoves for piece at (\(row), \(col))")
                     if moves.contains(currentGeneralPos) {
                         print("\(piece.imageName) at (\(row), \(col)) can check the \(color) general")
                         return true
@@ -247,7 +249,7 @@ class Board: ObservableObject {
         for row in 0..<10 {
             for col in 0..<9 {
                 if let piece = pieceAt(Position(row: row, col: col)), piece.isRed == isRed {
-                    let moves = piece.validMoves(board: self)
+                    let moves = validMoves(for: piece)
                     for move in moves {
                         // Simulate the move
                         let originalPosition = piece.currentPosition
@@ -311,7 +313,7 @@ class Board: ObservableObject {
             for col in 0..<9 {
                 if let piece = pieceAt(Position(row: row, col: col)), piece.color == color {
                     print("Checking piece \(piece.imageName) at (\(row), \(col))")
-                    let moves = piece.validMoves(board: self)
+                    let moves = validMoves(for: piece)
                     for move in moves {
                         // Try the move
                         let originalPosition = piece.currentPosition
@@ -401,5 +403,34 @@ class Board: ObservableObject {
     
     private var currentPlayer: PieceColor {
         isRedTurn ? .red : .blue
+    }
+    
+    // Returns all valid moves for a piece using its movement rules (Chariot only for now)
+    func validMoves(for piece: Piece) -> [Position] {
+        var moves: [Position] = []
+        let start = piece.currentPosition
+        for rule in piece.movementRules {
+            var distance = 1
+            var next = start
+            while rule.maxDistance == 0 || distance <= rule.maxDistance {
+                switch rule.direction {
+                case .up: next = Position(row: next.row - 1, col: next.col)
+                case .down: next = Position(row: next.row + 1, col: next.col)
+                case .left: next = Position(row: next.row, col: next.col - 1)
+                case .right: next = Position(row: next.row, col: next.col + 1)
+                default: break // Only straight lines for Chariot
+                }
+                if !piece.isWithinBounds(next) { break }
+                if let target = pieceAt(next) {
+                    if target.isRed != piece.isRed {
+                        moves.append(next)
+                    }
+                    break
+                }
+                moves.append(next)
+                distance += 1
+            }
+        }
+        return moves
     }
 }
