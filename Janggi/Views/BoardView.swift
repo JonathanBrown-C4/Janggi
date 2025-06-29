@@ -69,5 +69,4 @@ struct BoardView: View {
     testBoard.pieces[2][6] = Soldier(isRed: false, position: Position(row: 2, col: 6))
     
     return BoardView(board: testBoard, squareSize: 40)
-        .previewDisplayName("Horse at (4,5) can capture Soldier at (2,6)")
 } 
