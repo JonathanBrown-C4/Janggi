@@ -1,77 +1,96 @@
-//final class PawnTests: BaseJanggiTests {
-//    func testPawnMovement() {
-//        // Test initial position
-//        let initialPos = Position(row: 3, col: 0)
-//        XCTAssertNotNil(board.pieces[initialPos.row][initialPos.col], "Pawn should exist at initial position")
-//        XCTAssertTrue(board.pieces[initialPos.row][initialPos.col] is Pawn, "Piece at initial position should be a Pawn")
-//        
-//        guard let pawn = board.pieces[initialPos.row][initialPos.col] as? Pawn else {
-//            XCTFail("Failed to cast piece to Pawn")
-//            return
-//        }
-//        
-//        print("Initial Pawn position: \(pawn.currentPosition)")
-//        print("Pawn is red: \(pawn.isRed)")
-//        
-//        // Test valid moves before crossing the river
-//        let validMovesBeforeRiver = [
-//            Position(row: 4, col: 0)  // forward
-//        ]
-//        
-////        let actualMoves = pawn.validMoves(board: board)
-////        print("Actual valid moves: \(actualMoves)")
-//        
-//        for move in validMovesBeforeRiver {
-//            XCTAssertTrue(actualMoves.contains(move), "Pawn should be able to move forward to \(move)")
-//        }
-//        
-//        // Test invalid moves before crossing the river
-//        let invalidMovesBeforeRiver = [
-//            Position(row: 3, col: 1), // right
-//            Position(row: 3, col: -1), // left
-//            Position(row: 2, col: 0), // backward
-//            Position(row: 4, col: 1)  // diagonal
-//        ]
-//        
-//        for move in invalidMovesBeforeRiver {
-//            XCTAssertFalse(actualMoves.contains(move), "Pawn should not be able to move to \(move) before crossing river")
-//        }
-//        
-//        // Move pawn across the river
-//        board.pieces[5][0] = pawn
-//        board.pieces[3][0] = nil
-//        pawn.currentPosition = Position(row: 5, col: 0)
-//        
-//        print("\nAfter moving Pawn across river:")
-//        print("New Pawn position: \(pawn.currentPosition)")
-//        
-//        // Test valid moves after crossing the river
-//        let validMovesAfterRiver = [
-//            Position(row: 6, col: 0), // forward
-//            Position(row: 5, col: 1)  // right
-//        ]
-//        
-//        let newMoves = pawn.validMoves(board: board)
-//        print("New valid moves after crossing river: \(newMoves)")
-//        
-//        for move in validMovesAfterRiver {
-//            XCTAssertTrue(newMoves.contains(move), "Pawn should be able to move to \(move) after crossing river")
-//        }
-//        
-//        // Test capture
-//        let capturePos = Position(row: 6, col: 0)
-//        board.pieces[6][0] = Pawn(isRed: false, position: capturePos)
-//        let movesWithCapture = pawn.validMoves(board: board)
-//        XCTAssertTrue(movesWithCapture.contains(capturePos), "Pawn should be able to capture enemy piece")
-//        
-//        // Test blocked by friendly piece
-//        let friendlyPos = Position(row: 5, col: 1)
-//        board.pieces[5][1] = Pawn(isRed: true, position: friendlyPos)
-//        let movesWithBlock = pawn.validMoves(board: board)
-//        XCTAssertFalse(movesWithBlock.contains(friendlyPos), "Pawn should not be able to move to position occupied by friendly piece")
-//    }
-//    
-//    private func isWithinBounds(_ position: Position) -> Bool {
-//        return position.row >= 0 && position.row < 10 && position.col >= 0 && position.col < 9
-//    }
-//}
+import XCTest
+@testable import Janggi
+
+final class PawnTests: XCTestCase {
+    func testPawnInitializationWithDefaultPosition() {
+        let redPawn = Pawn(isRed: true, column: 0)
+        XCTAssertEqual(redPawn.currentPosition, Position(row: 3, col: 0), "Red pawn should start at (3,0)")
+        XCTAssertTrue(redPawn.isRed)
+        XCTAssertEqual(redPawn.imageName, "red_pawn")
+        
+        let bluePawn = Pawn(isRed: false, column: 0)
+        XCTAssertEqual(bluePawn.currentPosition, Position(row: 6, col: 0), "Blue pawn should start at (6,0)")
+        XCTAssertFalse(bluePawn.isRed)
+        XCTAssertEqual(bluePawn.imageName, "blue_pawn")
+    }
+    
+    func testPawnInitializationWithCustomPosition() {
+        let customPos = Position(row: 5, col: 5)
+        let pawn = Pawn(isRed: true, position: customPos)
+        XCTAssertEqual(pawn.currentPosition, customPos)
+        XCTAssertTrue(pawn.isRed)
+        XCTAssertEqual(pawn.imageName, "red_pawn")
+    }
+    
+    func testPawnMovementRulesBeforeCrossingRiver() {
+        // Red pawn at starting position (row 3) - hasn't crossed river yet
+        let redPawn = Pawn(isRed: true, column: 0)
+        XCTAssertEqual(redPawn.currentPosition, Position(row: 3, col: 0))
+        
+        let rules = redPawn.movementRules
+        XCTAssertEqual(rules.count, 1, "Red pawn should have 1 movement rule before crossing river")
+        XCTAssertEqual(rules[0].direction, .down, "Red pawn should move down before crossing river")
+        XCTAssertEqual(rules[0].maxDistance, 1, "Red pawn should move 1 square")
+        
+        // Blue pawn at starting position (row 6) - hasn't crossed river yet
+        let bluePawn = Pawn(isRed: false, column: 0)
+        XCTAssertEqual(bluePawn.currentPosition, Position(row: 6, col: 0))
+        
+        let blueRules = bluePawn.movementRules
+        XCTAssertEqual(blueRules.count, 1, "Blue pawn should have 1 movement rule before crossing river")
+        XCTAssertEqual(blueRules[0].direction, .up, "Blue pawn should move up before crossing river")
+        XCTAssertEqual(blueRules[0].maxDistance, 1, "Blue pawn should move 1 square")
+    }
+    
+    func testPawnMovementRulesAfterCrossingRiver() {
+        // Red pawn after crossing river (row 5)
+        let redPawn = Pawn(isRed: true, position: Position(row: 5, col: 0))
+        XCTAssertEqual(redPawn.currentPosition, Position(row: 5, col: 0))
+        
+        let rules = redPawn.movementRules
+        XCTAssertEqual(rules.count, 3, "Red pawn should have 3 movement rules after crossing river")
+        
+        let directions = Set(rules.map { $0.direction })
+        XCTAssertTrue(directions.contains(.down), "Red pawn should be able to move down after crossing river")
+        XCTAssertTrue(directions.contains(.left), "Red pawn should be able to move left after crossing river")
+        XCTAssertTrue(directions.contains(.right), "Red pawn should be able to move right after crossing river")
+        
+        for rule in rules {
+            XCTAssertEqual(rule.maxDistance, 1, "Red pawn should move 1 square in each direction")
+        }
+        
+        // Blue pawn after crossing river (row 4)
+        let bluePawn = Pawn(isRed: false, position: Position(row: 4, col: 0))
+        XCTAssertEqual(bluePawn.currentPosition, Position(row: 4, col: 0))
+        
+        let blueRules = bluePawn.movementRules
+        XCTAssertEqual(blueRules.count, 3, "Blue pawn should have 3 movement rules after crossing river")
+        
+        let blueDirections = Set(blueRules.map { $0.direction })
+        XCTAssertTrue(blueDirections.contains(.up), "Blue pawn should be able to move up after crossing river")
+        XCTAssertTrue(blueDirections.contains(.left), "Blue pawn should be able to move left after crossing river")
+        XCTAssertTrue(blueDirections.contains(.right), "Blue pawn should be able to move right after crossing river")
+        
+        for rule in blueRules {
+            XCTAssertEqual(rule.maxDistance, 1, "Blue pawn should move 1 square in each direction")
+        }
+    }
+    
+    func testPawnType() {
+        let pawn = Pawn(isRed: true, column: 0)
+        XCTAssertEqual(pawn.type, .pawn, "Pawn should have type .pawn")
+    }
+    
+    func testPawnSize() {
+        let pawn = Pawn(isRed: true, column: 0)
+        XCTAssertEqual(pawn.size, .small, "Pawn should have small size")
+    }
+    
+    func testPawnColor() {
+        let redPawn = Pawn(isRed: true, column: 0)
+        XCTAssertEqual(redPawn.color, .red, "Red pawn should have red color")
+        
+        let bluePawn = Pawn(isRed: false, column: 0)
+        XCTAssertEqual(bluePawn.color, .blue, "Blue pawn should have blue color")
+    }
+}

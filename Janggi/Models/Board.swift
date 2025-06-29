@@ -409,6 +409,7 @@ class Board: ObservableObject {
     func validMoves(for piece: Piece) -> [Position] {
         var moves: [Position] = []
         let start = piece.currentPosition
+        
         for rule in piece.movementRules {
             var distance = 1
             var next = start
