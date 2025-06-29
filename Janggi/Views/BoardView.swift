@@ -177,4 +177,107 @@ struct BoardView: View {
             .font(.caption)
         BoardView(board: testBoard, squareSize: 40)
     }
+}
+
+#Preview("Elephant Rules Debug") {
+    let elephant = Elephant(isRed: true, position: Position(row: 4, col: 4))
+    
+    return VStack {
+        Text("Elephant Movement Rules")
+            .font(.headline)
+        
+        ForEach(Array(elephant.movementRules.enumerated()), id: \.offset) { index, rule in
+            VStack(alignment: .leading) {
+                Text("Rule \(index):")
+                    .font(.subheadline)
+                Text("Direction: \(String(describing: rule.direction))")
+                Text("Max Distance: \(rule.maxDistance)")
+                Text("Blocking Rules: \(String(describing: rule.blockingRules))")
+            }
+            .padding()
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(8)
+        }
+        
+        Text("Total rules: \(elephant.movementRules.count)")
+            .font(.caption)
+    }
+    .padding()
+}
+
+#Preview("Elephant Move Analysis") {
+    let testBoard = Board()
+    // Clear the board
+    for row in 0..<10 {
+        for col in 0..<9 {
+            testBoard.pieces[row][col] = nil
+        }
+    }
+    // Set up Elephant at center
+    let elephant = Elephant(isRed: true, position: Position(row: 4, col: 4))
+    testBoard.pieces[4][4] = elephant
+    testBoard.selectedPiece = Position(row: 4, col: 4)
+    
+    // Get actual moves
+    let actualMoves = testBoard.validMoves(for: elephant)
+    
+    // Categorize moves
+    let orthogonalMoves = actualMoves.filter { move in
+        let rowDiff = abs(move.row - 4)
+        let colDiff = abs(move.col - 4)
+        return (rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1)
+    }
+    
+    let diagonalMoves = actualMoves.filter { move in
+        let rowDiff = abs(move.row - 4)
+        let colDiff = abs(move.col - 4)
+        return rowDiff == colDiff && rowDiff > 0
+    }
+    
+    let otherMoves = actualMoves.filter { move in
+        let rowDiff = abs(move.row - 4)
+        let colDiff = abs(move.col - 4)
+        return !((rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1)) && !(rowDiff == colDiff && rowDiff > 0)
+    }
+    
+    return VStack {
+        Text("Elephant Move Analysis")
+            .font(.headline)
+        
+        Text("Total moves: \(actualMoves.count)")
+            .font(.subheadline)
+        
+        if !orthogonalMoves.isEmpty {
+            Text("ORTHOGONAL MOVES (1 step): \(orthogonalMoves.count)")
+                .foregroundColor(.red)
+                .font(.caption)
+            ForEach(orthogonalMoves, id: \.self) { move in
+                Text("  \(move.row),\(move.col)")
+                    .font(.caption)
+            }
+        }
+        
+        if !diagonalMoves.isEmpty {
+            Text("DIAGONAL MOVES (2+ steps): \(diagonalMoves.count)")
+                .foregroundColor(.green)
+                .font(.caption)
+            ForEach(diagonalMoves, id: \.self) { move in
+                Text("  \(move.row),\(move.col)")
+                    .font(.caption)
+            }
+        }
+        
+        if !otherMoves.isEmpty {
+            Text("OTHER MOVES: \(otherMoves.count)")
+                .foregroundColor(.orange)
+                .font(.caption)
+            ForEach(otherMoves, id: \.self) { move in
+                Text("  \(move.row),\(move.col)")
+                    .font(.caption)
+            }
+        }
+        
+        BoardView(board: testBoard, squareSize: 30)
+    }
+    .padding()
 } 
