@@ -69,4 +69,38 @@ struct BoardView: View {
     testBoard.pieces[2][6] = Soldier(isRed: false, position: Position(row: 2, col: 6))
     
     return BoardView(board: testBoard, squareSize: 40)
+}
+
+#Preview("Move Indicators Test") {
+    let testBoard = Board()
+    // Clear the board
+    for row in 0..<10 {
+        for col in 0..<9 {
+            testBoard.pieces[row][col] = nil
+        }
+    }
+    // Set up a scenario to show move indicators
+    testBoard.pieces[4][4] = Chariot(isRed: true, position: Position(row: 4, col: 4))
+    testBoard.selectedPiece = Position(row: 4, col: 4)
+    testBoard.validMoves = [
+        Position(row: 0, col: 4), // Up
+        Position(row: 1, col: 4), // Up
+        Position(row: 2, col: 4), // Up
+        Position(row: 3, col: 4), // Up
+        Position(row: 5, col: 4), // Down
+        Position(row: 6, col: 4), // Down
+        Position(row: 7, col: 4), // Down
+        Position(row: 8, col: 4), // Down
+        Position(row: 9, col: 4), // Down
+        Position(row: 4, col: 0), // Left
+        Position(row: 4, col: 1), // Left
+        Position(row: 4, col: 2), // Left
+        Position(row: 4, col: 3), // Left
+        Position(row: 4, col: 5), // Right
+        Position(row: 4, col: 6), // Right
+        Position(row: 4, col: 7), // Right
+        Position(row: 4, col: 8)  // Right
+    ]
+    
+    return BoardView(board: testBoard, squareSize: 40)
 } 

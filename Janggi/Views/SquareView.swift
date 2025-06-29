@@ -15,8 +15,6 @@ struct SquareView: View {
                 Group {
                     if isSelected {
                         Color.yellow.opacity(0.3)
-                    } else if isValidMove {
-                        Color.green.opacity(0.3)
                     }
                 }
             )

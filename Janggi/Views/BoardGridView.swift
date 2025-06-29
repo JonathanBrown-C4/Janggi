@@ -32,6 +32,7 @@ struct BoardGridView: View {
                     }
                 }
                 .stroke(Color.black, lineWidth: 2)
+                
                 // Draw star points (now 16x16)
                 ForEach(Array(starPoints.enumerated()), id: \.offset) { _, point in
                     let pos = grid.point(for: Position(row: point.0, col: point.1))
@@ -40,19 +41,40 @@ struct BoardGridView: View {
                         .frame(width: 16, height: 16)
                         .position(x: pos.x, y: pos.y)
                 }
-                // Overlay pieces and tap logic
+                
+                // Draw move indicators as circles at grid intersections
+                ForEach(board.validMoves, id: \.self) { movePosition in
+                    let pos = grid.point(for: movePosition)
+                    Circle()
+                        .fill(Color.green.opacity(0.6))
+                        .frame(width: 24, height: 24)
+                        .position(x: pos.x, y: pos.y)
+                        .onTapGesture {
+                            onSquareTap(movePosition)
+                        }
+                }
+                
+                // Draw selected piece indicator
+                if let selectedPosition = board.selectedPiece {
+                    let pos = grid.point(for: selectedPosition)
+                    Circle()
+                        .fill(Color.yellow.opacity(0.6))
+                        .frame(width: 24, height: 24)
+                        .position(x: pos.x, y: pos.y)
+                }
+                
+                // Overlay tap areas for piece selection (invisible but tappable)
                 VStack(spacing: 0) {
                     ForEach(0..<(grid.rows-1)) { row in
                         HStack(spacing: 0) {
                             ForEach(0..<(grid.columns-1)) { col in
                                 let position = Position(row: row, col: col)
-                                SquareView(
-                                    position: position,
-                                    squareSize: grid.cellSize,
-                                    isSelected: board.selectedPiece == position,
-                                    isValidMove: board.validMoves.contains(where: { $0.row == row && $0.col == col }),
-                                    onTap: { onSquareTap(position) }
-                                )
+                                Rectangle()
+                                    .fill(Color.clear)
+                                    .frame(width: grid.cellSize, height: grid.cellSize)
+                                    .onTapGesture {
+                                        onSquareTap(position)
+                                    }
                             }
                         }
                     }
