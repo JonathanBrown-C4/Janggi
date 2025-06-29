@@ -47,7 +47,11 @@ struct BoardGridView: View {
                     let pos = grid.point(for: movePosition)
                     Circle()
                         .fill(Color.green.opacity(0.6))
-                        .frame(width: 24, height: 24)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.gray, lineWidth: 2)
+                        )
+                        .frame(width: 26, height: 26)
                         .position(x: pos.x, y: pos.y)
                         .onTapGesture {
                             onSquareTap(movePosition)
@@ -59,7 +63,11 @@ struct BoardGridView: View {
                     let pos = grid.point(for: selectedPosition)
                     Circle()
                         .fill(Color.yellow.opacity(0.6))
-                        .frame(width: 24, height: 24)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.gray, lineWidth: 2)
+                        )
+                        .frame(width: 26, height: 26)
                         .position(x: pos.x, y: pos.y)
                 }
                 
