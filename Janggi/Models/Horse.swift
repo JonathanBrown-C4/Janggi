@@ -63,4 +63,10 @@ class Horse: Piece {
 //        
 //        return moves
 //    }
+
+    override var movementRules: [MovementRule] {
+        return [
+            MovementRule(direction: .lShape, maxDistance: 1, requiresPlatform: false, palaceRestricted: false, blockingRules: .centerBlock)
+        ]
+    }
 } 

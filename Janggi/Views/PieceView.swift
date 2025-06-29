@@ -57,6 +57,6 @@ struct Hexagon: Shape {
     VStack {
         PieceView(piece: General(isRed: true, position: Position(row: 0, col: 4)))
         PieceView(piece: Horse(isRed: false, position: Position(row: 9, col: 1)))
-        PieceView(piece: Pawn(isRed: true, position: Position(row: 3, col: 0)))
+        PieceView(piece: Soldier(isRed: true, position: Position(row: 3, col: 0)))
     }
 } 

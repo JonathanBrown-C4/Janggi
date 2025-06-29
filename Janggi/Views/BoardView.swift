@@ -54,4 +54,20 @@ struct BoardView: View {
 
 #Preview {
     BoardView(board: Board(), squareSize: 40)
+}
+
+#Preview("Horse Capture Test") {
+    let testBoard = Board()
+    // Clear the board
+    for row in 0..<10 {
+        for col in 0..<9 {
+            testBoard.pieces[row][col] = nil
+        }
+    }
+    // Set up the test scenario: Horse at (4,5), Soldier at (2,6)
+    testBoard.pieces[4][5] = Horse(isRed: true, position: Position(row: 4, col: 5))
+    testBoard.pieces[2][6] = Soldier(isRed: false, position: Position(row: 2, col: 6))
+    
+    return BoardView(board: testBoard, squareSize: 40)
+        .previewDisplayName("Horse at (4,5) can capture Soldier at (2,6)")
 } 

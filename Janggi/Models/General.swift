@@ -53,4 +53,11 @@ class General: Piece {
 //        
 //        return moves
 //    }
+    
+    override var movementRules: [MovementRule] {
+        return [
+            MovementRule(direction: .orthogonal, maxDistance: 1, requiresPlatform: false, palaceRestricted: true, blockingRules: .stopAtFirst),
+            MovementRule(direction: .diagonal, maxDistance: 1, requiresPlatform: false, palaceRestricted: true, blockingRules: .stopAtFirst)
+        ]
+    }
 } 

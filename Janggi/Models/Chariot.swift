@@ -3,10 +3,7 @@ import SwiftUI
 class Chariot: Piece {
     override var movementRules: [MovementRule] {
         return [
-            MovementRule(direction: .up, maxDistance: 0),
-            MovementRule(direction: .down, maxDistance: 0),
-            MovementRule(direction: .left, maxDistance: 0),
-            MovementRule(direction: .right, maxDistance: 0)
+            MovementRule(direction: .orthogonal, maxDistance: 0, requiresPlatform: false, palaceRestricted: false, blockingRules: .stopAtFirst)
         ]
     }
     

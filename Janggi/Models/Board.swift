@@ -62,9 +62,9 @@ class Board: ObservableObject {
         pieces[2][1] = Cannon(isRed: true, position: Position(row: 2, col: 1))
         pieces[2][7] = Cannon(isRed: true, position: Position(row: 2, col: 7))
         
-        // Pawns
+        // Soldiers
         for col in [0, 2, 4, 6, 8] {
-            pieces[3][col] = Pawn(isRed: true, position: Position(row: 3, col: col))
+            pieces[3][col] = Soldier(isRed: true, position: Position(row: 3, col: col))
         }
         
         // Setup Blue pieces
@@ -91,9 +91,9 @@ class Board: ObservableObject {
         pieces[7][1] = Cannon(isRed: false, position: Position(row: 7, col: 1))
         pieces[7][7] = Cannon(isRed: false, position: Position(row: 7, col: 7))
         
-        // Pawns
+        // Soldiers
         for col in [0, 2, 4, 6, 8] {
-            pieces[6][col] = Pawn(isRed: false, position: Position(row: 6, col: col))
+            pieces[6][col] = Soldier(isRed: false, position: Position(row: 6, col: col))
         }
     }
     
@@ -405,33 +405,287 @@ class Board: ObservableObject {
         isRedTurn ? .red : .blue
     }
     
-    // Returns all valid moves for a piece using its movement rules (Chariot only for now)
+    // Returns all valid moves for a piece using its movement rules
     func validMoves(for piece: Piece) -> [Position] {
+        var moves: [Position] = []
+        
+        for rule in piece.movementRules {
+            switch rule.direction {
+            case .orthogonal:
+                moves.append(contentsOf: getOrthogonalMoves(for: piece, rule: rule))
+            case .diagonal:
+                moves.append(contentsOf: getDiagonalMoves(for: piece, rule: rule))
+            case .lShape:
+                moves.append(contentsOf: getLShapeMoves(for: piece, rule: rule))
+            case .custom:
+                moves.append(contentsOf: getCustomMoves(for: piece, rule: rule))
+            }
+        }
+        
+        return moves
+    }
+    
+    // Helper method for orthogonal movement (up, down, left, right)
+    private func getOrthogonalMoves(for piece: Piece, rule: MovementRule) -> [Position] {
         var moves: [Position] = []
         let start = piece.currentPosition
         
-        for rule in piece.movementRules {
-            var distance = 1
-            var next = start
-            while rule.maxDistance == 0 || distance <= rule.maxDistance {
-                switch rule.direction {
-                case .up: next = Position(row: next.row - 1, col: next.col)
-                case .down: next = Position(row: next.row + 1, col: next.col)
-                case .left: next = Position(row: next.row, col: next.col - 1)
-                case .right: next = Position(row: next.row, col: next.col + 1)
-                default: break // Only straight lines for Chariot
-                }
-                if !piece.isWithinBounds(next) { break }
-                if let target = pieceAt(next) {
-                    if target.isRed != piece.isRed {
-                        moves.append(next)
+        // Special handling for Soldier directional movement
+        if piece is Soldier {
+            let soldier = piece as! Soldier
+            let directions = getSoldierDirections(soldier)
+            
+            for (rowDelta, colDelta) in directions {
+                let pos = Position(row: start.row + rowDelta, col: start.col + colDelta)
+                
+                if piece.isWithinBounds(pos) {
+                    if let targetPiece = pieceAt(pos) {
+                        if targetPiece.isRed != piece.isRed {
+                            moves.append(pos)
+                        }
+                    } else {
+                        moves.append(pos)
                     }
+                }
+            }
+            return moves
+        }
+        
+        let directions = [(0, 1), (0, -1), (1, 0), (-1, 0)] // right, left, down, up
+        
+        for (rowDelta, colDelta) in directions {
+            var distance = 1
+            var currentRow = start.row + rowDelta
+            var currentCol = start.col + colDelta
+            
+            while (rule.maxDistance == 0 || distance <= rule.maxDistance) && 
+                  piece.isWithinBounds(Position(row: currentRow, col: currentCol)) {
+                let pos = Position(row: currentRow, col: currentCol)
+                
+                // Check palace restrictions
+                if rule.palaceRestricted && !isInPalace(pos, isRed: piece.isRed) {
                     break
                 }
-                moves.append(next)
+                
+                if let targetPiece = pieceAt(pos) {
+                    switch rule.blockingRules {
+                    case .none:
+                        // Can move through pieces
+                        moves.append(pos)
+                    case .stopAtFirst:
+                        // Can capture enemy piece
+                        if targetPiece.isRed != piece.isRed {
+                            moves.append(pos)
+                        }
+                        break
+                    case .jumpOver:
+                        // Cannon logic - needs platform
+                        if !rule.requiresPlatform {
+                            // Regular piece, not cannon
+                            if targetPiece.isRed != piece.isRed {
+                                moves.append(pos)
+                            }
+                            break
+                        }
+                        // Cannon logic would be handled in custom moves
+                        break
+                    case .centerBlock:
+                        // Horse logic - blocked by center
+                        break
+                    }
+                    break
+                } else {
+                    // Empty square
+                    if rule.requiresPlatform {
+                        // Cannon needs platform to move
+                        break
+                    } else {
+                        moves.append(pos)
+                    }
+                }
+                
+                currentRow += rowDelta
+                currentCol += colDelta
                 distance += 1
             }
         }
+        
         return moves
+    }
+    
+    // Helper method to get soldier movement directions
+    private func getSoldierDirections(_ soldier: Soldier) -> [(Int, Int)] {
+        var directions: [(Int, Int)] = []
+        
+        // Red soldiers can only move down, left, and right (not up)
+        // Blue soldiers can only move up, left, and right (not down)
+        if soldier.isRed {
+            directions.append((1, 0))   // down
+        } else {
+            directions.append((-1, 0))  // up
+        }
+        
+        // Sideways movement (left and right)
+        directions.append((0, 1))   // right
+        directions.append((0, -1))  // left
+        
+        return directions
+    }
+    
+    // Helper method for diagonal movement
+    private func getDiagonalMoves(for piece: Piece, rule: MovementRule) -> [Position] {
+        var moves: [Position] = []
+        let start = piece.currentPosition
+        let directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)] // down-right, down-left, up-right, up-left
+        
+        for (rowDelta, colDelta) in directions {
+            var distance = 1
+            var currentRow = start.row + rowDelta
+            var currentCol = start.col + colDelta
+            
+            while (rule.maxDistance == 0 || distance <= rule.maxDistance) && 
+                  piece.isWithinBounds(Position(row: currentRow, col: currentCol)) {
+                let pos = Position(row: currentRow, col: currentCol)
+                
+                // Check palace restrictions
+                if rule.palaceRestricted && !isInPalace(pos, isRed: piece.isRed) {
+                    break
+                }
+                
+                if let targetPiece = pieceAt(pos) {
+                    if targetPiece.isRed != piece.isRed {
+                        moves.append(pos)
+                    }
+                    break
+                } else {
+                    moves.append(pos)
+                }
+                
+                currentRow += rowDelta
+                currentCol += colDelta
+                distance += 1
+            }
+        }
+        
+        return moves
+    }
+    
+    // Helper method for L-shaped movement (Horse)
+    private func getLShapeMoves(for piece: Piece, rule: MovementRule) -> [Position] {
+        var moves: [Position] = []
+        let start = piece.currentPosition
+        
+        // Horse L-shaped moves: (target position, blocking position)
+        let horseMoves = [
+            (Position(row: start.row - 2, col: start.col + 1), Position(row: start.row - 1, col: start.col)), // Up 2, right 1
+            (Position(row: start.row - 2, col: start.col - 1), Position(row: start.row - 1, col: start.col)), // Up 2, left 1
+            (Position(row: start.row + 2, col: start.col + 1), Position(row: start.row + 1, col: start.col)), // Down 2, right 1
+            (Position(row: start.row + 2, col: start.col - 1), Position(row: start.row + 1, col: start.col)), // Down 2, left 1
+            (Position(row: start.row - 1, col: start.col + 2), Position(row: start.row, col: start.col + 1)), // Up 1, right 2
+            (Position(row: start.row + 1, col: start.col + 2), Position(row: start.row, col: start.col + 1)), // Down 1, right 2
+            (Position(row: start.row - 1, col: start.col - 2), Position(row: start.row, col: start.col - 1)), // Up 1, left 2
+            (Position(row: start.row + 1, col: start.col - 2), Position(row: start.row, col: start.col - 1))  // Down 1, left 2
+        ]
+        
+        for (target, block) in horseMoves {
+            if piece.isWithinBounds(target) && piece.isWithinBounds(block) {
+                if pieceAt(block) == nil {
+                    if let targetPiece = pieceAt(target) {
+                        if targetPiece.isRed != piece.isRed {
+                            moves.append(target)
+                        }
+                    } else {
+                        moves.append(target)
+                    }
+                }
+            }
+        }
+        
+        return moves
+    }
+    
+    // Helper method for custom movement (Elephant, Cannon)
+    private func getCustomMoves(for piece: Piece, rule: MovementRule) -> [Position] {
+        var moves: [Position] = []
+        let start = piece.currentPosition
+        
+        // Elephant logic
+        if piece is Elephant {
+            let elephantMoves = [
+                (Position(row: start.row - 2, col: start.col + 2), Position(row: start.row - 1, col: start.col + 1)), // Up-right
+                (Position(row: start.row - 2, col: start.col - 2), Position(row: start.row - 1, col: start.col - 1)), // Up-left
+                (Position(row: start.row + 2, col: start.col + 2), Position(row: start.row + 1, col: start.col + 1)), // Down-right
+                (Position(row: start.row + 2, col: start.col - 2), Position(row: start.row + 1, col: start.col - 1))  // Down-left
+            ]
+            
+            for (target, block) in elephantMoves {
+                if piece.isWithinBounds(target) && piece.isWithinBounds(block) {
+                    if pieceAt(block) == nil {
+                        if let targetPiece = pieceAt(target) {
+                            if targetPiece.isRed != piece.isRed {
+                                moves.append(target)
+                            }
+                        } else {
+                            moves.append(target)
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Cannon logic
+        if piece is Cannon {
+            let directions = [(0, 1), (0, -1), (1, 0), (-1, 0)] // right, left, down, up
+            
+            for (rowDelta, colDelta) in directions {
+                var currentRow = start.row + rowDelta
+                var currentCol = start.col + colDelta
+                var foundPlatform = false
+                var platformPos: Position? = nil
+                
+                while piece.isWithinBounds(Position(row: currentRow, col: currentCol)) {
+                    let pos = Position(row: currentRow, col: currentCol)
+                    
+                    if let pieceAtPos = pieceAt(pos) {
+                        if !foundPlatform {
+                            // Found first platform (can be any piece)
+                            foundPlatform = true
+                            platformPos = pos
+                        } else {
+                            // Found another piece after platform
+                            if pieceAtPos.isRed != piece.isRed {
+                                // Can capture enemy piece on opposite side of platform
+                                moves.append(pos)
+                            }
+                            // Stop after finding any piece after platform
+                            break
+                        }
+                    } else if foundPlatform {
+                        // Can only move to empty squares after finding platform
+                        // Check if we're on the opposite side of the platform
+                        let isOppositeSide = (rowDelta > 0 && pos.row > platformPos!.row) ||
+                                           (rowDelta < 0 && pos.row < platformPos!.row) ||
+                                           (colDelta > 0 && pos.col > platformPos!.col) ||
+                                           (colDelta < 0 && pos.col < platformPos!.col)
+                        
+                        if isOppositeSide {
+                            moves.append(pos)
+                        }
+                    }
+                    
+                    currentRow += rowDelta
+                    currentCol += colDelta
+                }
+            }
+        }
+        
+        return moves
+    }
+    
+    // Helper method to check if position is in palace
+    private func isInPalace(_ position: Position, isRed: Bool) -> Bool {
+        let palaceRows = isRed ? (0...2) : (7...9)
+        let palaceCols = 3...5
+        return palaceRows.contains(position.row) && palaceCols.contains(position.col)
     }
 }

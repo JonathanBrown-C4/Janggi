@@ -1,0 +1,1 @@
+PieceView(piece: Soldier(isRed: true, position: Position(row: 3, col: 0))) 

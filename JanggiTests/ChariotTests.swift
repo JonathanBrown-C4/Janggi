@@ -35,20 +35,16 @@ final class ChariotTests: XCTestCase {
     func testChariotMovementRules() {
         let chariot = Chariot(isRed: true, isLeft: true)
         
-        // Chariot should have exactly 4 movement rules
-        XCTAssertEqual(chariot.movementRules.count, 4, "Chariot should have 4 movement rules")
+        // Chariot should have exactly 1 movement rule (orthogonal)
+        XCTAssertEqual(chariot.movementRules.count, 1, "Chariot should have 1 movement rule")
         
-        // Check that all four directions are present
-        let directions = Set(chariot.movementRules.map { $0.direction })
-        XCTAssertTrue(directions.contains(.up), "Chariot should be able to move up")
-        XCTAssertTrue(directions.contains(.down), "Chariot should be able to move down")
-        XCTAssertTrue(directions.contains(.left), "Chariot should be able to move left")
-        XCTAssertTrue(directions.contains(.right), "Chariot should be able to move right")
-        
-        // Check that all rules have unlimited distance (maxDistance = 0)
-        for rule in chariot.movementRules {
-            XCTAssertEqual(rule.maxDistance, 0, "Chariot should have unlimited movement in each direction")
-        }
+        // Check that the rule is orthogonal
+        let rule = chariot.movementRules.first!
+        XCTAssertEqual(rule.direction, .orthogonal, "Chariot should have orthogonal movement")
+        XCTAssertEqual(rule.maxDistance, 0, "Chariot should have unlimited movement")
+        XCTAssertFalse(rule.requiresPlatform, "Chariot should not require platform")
+        XCTAssertFalse(rule.palaceRestricted, "Chariot should not be palace restricted")
+        XCTAssertEqual(rule.blockingRules, .stopAtFirst, "Chariot should stop at first piece")
     }
     
     func testChariotType() {

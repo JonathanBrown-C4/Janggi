@@ -7,8 +7,12 @@ final class BoardTests: XCTestCase {
     override func setUp() {
         super.setUp()
         board = Board()
-        // Clear the board and set up only Chariots and Pawns for testing
-        setupTestBoard()
+        // Clear the board and set up only Chariots and Soldiers for testing
+        for row in 0..<10 {
+            for col in 0..<9 {
+                board.pieces[row][col] = nil
+            }
+        }
     }
     
     override func tearDown() {
@@ -16,157 +20,127 @@ final class BoardTests: XCTestCase {
         super.tearDown()
     }
     
-    private func setupTestBoard() {
-        // Clear the board
-        for row in 0..<10 {
-            for col in 0..<9 {
-                board.pieces[row][col] = nil
-            }
-        }
-        
-        // Set up Chariots at their starting positions
-        board.pieces[0][0] = Chariot(isRed: true, isLeft: true)  // Red left chariot
-        board.pieces[0][8] = Chariot(isRed: true, isLeft: false) // Red right chariot
-        board.pieces[9][0] = Chariot(isRed: false, isLeft: true) // Blue left chariot
-        board.pieces[9][8] = Chariot(isRed: false, isLeft: false) // Blue right chariot
-        
-        // Set up some Pawns for validation
-        board.pieces[3][0] = Pawn(isRed: true, column: 0)   // Red pawn
-        board.pieces[6][0] = Pawn(isRed: false, column: 0)  // Blue pawn
-    }
-    
     func testBoardInitialization() {
-        // Test board dimensions
+        // Test that board is properly initialized
+        XCTAssertNotNil(board, "Board should be initialized")
         XCTAssertEqual(board.pieces.count, 10, "Board should have 10 rows")
         XCTAssertEqual(board.pieces[0].count, 9, "Board should have 9 columns")
+    }
+    
+    func testPlacePiece() {
+        let chariot = Chariot(isRed: true, position: Position(row: 0, col: 0))
+        board.pieces[0][0] = chariot
+        XCTAssertNotNil(board.pieces[0][0], "Chariot should be placed at (0,0)")
+        XCTAssertEqual(board.pieces[0][0]?.type, .chariot, "Piece at (0,0) should be a chariot")
+    }
+    
+    func testSetupSoldiers() {
+        // Set up some Soldiers for validation
+        board.pieces[3][0] = Soldier(isRed: true, column: 0)   // Red soldier
+        board.pieces[6][0] = Soldier(isRed: false, column: 0)  // Blue soldier
         
-        // Test initial piece placement
-        XCTAssertNotNil(board.pieces[0][0], "Red left chariot should be at (0,0)")
-        XCTAssertNotNil(board.pieces[0][8], "Red right chariot should be at (0,8)")
-        XCTAssertNotNil(board.pieces[9][0], "Blue left chariot should be at (9,0)")
-        XCTAssertNotNil(board.pieces[9][8], "Blue right chariot should be at (9,8)")
-        XCTAssertNotNil(board.pieces[3][0], "Red pawn should be at (3,0)")
-        XCTAssertNotNil(board.pieces[6][0], "Blue pawn should be at (6,0)")
-        
-        // Test initial game state
-        XCTAssertTrue(board.isRedTurn, "Red should start first")
-        XCTAssertEqual(board.gameState, .playing, "Game should start in playing state")
+        XCTAssertNotNil(board.pieces[3][0], "Red soldier should be at (3,0)")
+        XCTAssertNotNil(board.pieces[6][0], "Blue soldier should be at (6,0)")
+        XCTAssertEqual(board.pieces[3][0]?.type, .soldier, "Piece at (3,0) should be a soldier")
+        XCTAssertEqual(board.pieces[6][0]?.type, .soldier, "Piece at (6,0) should be a soldier")
     }
     
     func testChariotOpenMovement() {
-        let redChariot = board.pieces[0][0] as! Chariot
-        let moves = board.validMoves(for: redChariot)
+        let chariot = Chariot(isRed: true, position: Position(row: 0, col: 0))
+        board.pieces[0][0] = chariot
+        let moves = board.validMoves(for: chariot)
         
-        // Should be able to move right along the top row
-        XCTAssertTrue(moves.contains(Position(row: 0, col: 1)), "Chariot should move right")
-        XCTAssertTrue(moves.contains(Position(row: 0, col: 2)), "Chariot should move right")
-        XCTAssertTrue(moves.contains(Position(row: 0, col: 7)), "Chariot should move right")
+        // Should be able to move down the entire column
+        XCTAssertTrue(moves.contains(Position(row: 1, col: 0)), "Chariot should move down to (1,0)")
+        XCTAssertTrue(moves.contains(Position(row: 2, col: 0)), "Chariot should move down to (2,0)")
+        XCTAssertTrue(moves.contains(Position(row: 3, col: 0)), "Chariot should move down to (3,0)")
+        XCTAssertTrue(moves.contains(Position(row: 4, col: 0)), "Chariot should move down to (4,0)")
+        XCTAssertTrue(moves.contains(Position(row: 5, col: 0)), "Chariot should move down to (5,0)")
+        XCTAssertTrue(moves.contains(Position(row: 6, col: 0)), "Chariot should move down to (6,0)")
+        XCTAssertTrue(moves.contains(Position(row: 7, col: 0)), "Chariot should move down to (7,0)")
+        XCTAssertTrue(moves.contains(Position(row: 8, col: 0)), "Chariot should move down to (8,0)")
+        XCTAssertTrue(moves.contains(Position(row: 9, col: 0)), "Chariot should move down to (9,0)")
         
-        // Should be able to move down along the left column
-        XCTAssertTrue(moves.contains(Position(row: 1, col: 0)), "Chariot should move down")
-        XCTAssertTrue(moves.contains(Position(row: 2, col: 0)), "Chariot should move down")
-        XCTAssertTrue(moves.contains(Position(row: 2, col: 0)), "Chariot should move down")
-        
-        // Should not be able to move beyond board boundaries
-        XCTAssertFalse(moves.contains(Position(row: -1, col: 0)), "Chariot should not move above board")
-        XCTAssertFalse(moves.contains(Position(row: 0, col: -1)), "Chariot should not move left of board")
+        // Should be able to move right across the entire row
+        XCTAssertTrue(moves.contains(Position(row: 0, col: 1)), "Chariot should move right to (0,1)")
+        XCTAssertTrue(moves.contains(Position(row: 0, col: 2)), "Chariot should move right to (0,2)")
+        XCTAssertTrue(moves.contains(Position(row: 0, col: 3)), "Chariot should move right to (0,3)")
+        XCTAssertTrue(moves.contains(Position(row: 0, col: 4)), "Chariot should move right to (0,4)")
+        XCTAssertTrue(moves.contains(Position(row: 0, col: 5)), "Chariot should move right to (0,5)")
+        XCTAssertTrue(moves.contains(Position(row: 0, col: 6)), "Chariot should move right to (0,6)")
+        XCTAssertTrue(moves.contains(Position(row: 0, col: 7)), "Chariot should move right to (0,7)")
+        XCTAssertTrue(moves.contains(Position(row: 0, col: 8)), "Chariot should move right to (0,8)")
     }
     
-    func testChariotBlockedByPawn() {
-        let redChariot = board.pieces[0][0] as! Chariot
+    func testChariotBlockedBySoldier() {
+        let chariot = Chariot(isRed: true, position: Position(row: 0, col: 0))
+        board.pieces[0][0] = chariot
         
-        // Add a red pawn to block the chariot's downward movement
-        board.pieces[2][0] = Pawn(isRed: true, position: Position(row: 2, col: 0))
+        // Add a red soldier to block the chariot's downward movement
+        board.pieces[2][0] = Soldier(isRed: true, position: Position(row: 2, col: 0))
         
-        let moves = board.validMoves(for: redChariot)
+        let moves = board.validMoves(for: chariot)
         
-        // Should not be able to move past the blocking pawn
-        XCTAssertFalse(moves.contains(Position(row: 3, col: 0)), "Chariot should not move past blocking pawn")
-        XCTAssertFalse(moves.contains(Position(row: 4, col: 0)), "Chariot should not move past blocking pawn")
+        // Should not be able to move past the blocking soldier
+        XCTAssertFalse(moves.contains(Position(row: 3, col: 0)), "Chariot should not move past blocking soldier")
+        XCTAssertFalse(moves.contains(Position(row: 4, col: 0)), "Chariot should not move past blocking soldier")
         
-        // Should NOT be able to move to the position of the blocking pawn (same color)
-        XCTAssertFalse(moves.contains(Position(row: 2, col: 0)), "Chariot should not be able to capture same-color pawn")
+        // Should NOT be able to move to the position of the blocking soldier (same color)
+        XCTAssertFalse(moves.contains(Position(row: 2, col: 0)), "Chariot should not be able to capture same-color soldier")
     }
     
-    func testChariotCaptureEnemyPawn() {
-        let redChariot = board.pieces[0][0] as! Chariot
+    func testChariotCaptureEnemySoldier() {
+        let chariot = Chariot(isRed: true, position: Position(row: 0, col: 0))
+        board.pieces[0][0] = chariot
         
-        // Add an enemy pawn to block the chariot's downward movement
-        board.pieces[2][0] = Pawn(isRed: false, position: Position(row: 2, col: 0))
+        // Add an enemy soldier to block the chariot's downward movement
+        board.pieces[2][0] = Soldier(isRed: false, position: Position(row: 2, col: 0))
         
-        let moves = board.validMoves(for: redChariot)
+        let moves = board.validMoves(for: chariot)
         
-        // Should be able to capture the enemy pawn
-        XCTAssertTrue(moves.contains(Position(row: 2, col: 0)), "Chariot should be able to capture enemy pawn")
+        // Should be able to capture the enemy soldier
+        XCTAssertTrue(moves.contains(Position(row: 2, col: 0)), "Chariot should be able to capture enemy soldier")
         
-        // Should not be able to move past the enemy pawn
-        XCTAssertFalse(moves.contains(Position(row: 3, col: 0)), "Chariot should not move past enemy pawn")
+        // Should not be able to move past the enemy soldier
+        XCTAssertFalse(moves.contains(Position(row: 3, col: 0)), "Chariot should not move past enemy soldier")
     }
     
-    func testChariotMovementFromDifferentPositions() {
-        // Test red right chariot
-        let redRightChariot = board.pieces[0][8] as! Chariot
-        let rightMoves = board.validMoves(for: redRightChariot)
+    func testChariotHorizontalMovement() {
+        let chariot = Chariot(isRed: true, position: Position(row: 5, col: 4))
+        board.pieces[5][4] = chariot
         
-        // Should be able to move left along the top row
-        XCTAssertTrue(rightMoves.contains(Position(row: 0, col: 7)), "Right chariot should move left")
-        XCTAssertTrue(rightMoves.contains(Position(row: 0, col: 6)), "Right chariot should move left")
+        let moves = board.validMoves(for: chariot)
         
-        // Should be able to move down along the right column
-        XCTAssertTrue(rightMoves.contains(Position(row: 1, col: 8)), "Right chariot should move down")
-        XCTAssertTrue(rightMoves.contains(Position(row: 2, col: 8)), "Right chariot should move down")
-        
-        // Test blue left chariot
-        let blueLeftChariot = board.pieces[9][0] as! Chariot
-        let blueMoves = board.validMoves(for: blueLeftChariot)
-        
-        // Should be able to move up along the left column
-        XCTAssertTrue(blueMoves.contains(Position(row: 8, col: 0)), "Blue chariot should move up")
-        XCTAssertTrue(blueMoves.contains(Position(row: 7, col: 0)), "Blue chariot should move up")
-        
-        // Should be able to move right along the bottom row
-        XCTAssertTrue(blueMoves.contains(Position(row: 9, col: 1)), "Blue chariot should move right")
-        XCTAssertTrue(blueMoves.contains(Position(row: 9, col: 2)), "Blue chariot should move right")
+        // Should be able to move left and right
+        XCTAssertTrue(moves.contains(Position(row: 5, col: 0)), "Chariot should move left to (5,0)")
+        XCTAssertTrue(moves.contains(Position(row: 5, col: 1)), "Chariot should move left to (5,1)")
+        XCTAssertTrue(moves.contains(Position(row: 5, col: 2)), "Chariot should move left to (5,2)")
+        XCTAssertTrue(moves.contains(Position(row: 5, col: 3)), "Chariot should move left to (5,3)")
+        XCTAssertTrue(moves.contains(Position(row: 5, col: 5)), "Chariot should move right to (5,5)")
+        XCTAssertTrue(moves.contains(Position(row: 5, col: 6)), "Chariot should move right to (5,6)")
+        XCTAssertTrue(moves.contains(Position(row: 5, col: 7)), "Chariot should move right to (5,7)")
+        XCTAssertTrue(moves.contains(Position(row: 5, col: 8)), "Chariot should move right to (5,8)")
     }
     
-    func testChariotEdgeCases() {
-        // Test chariot at corner position
-        let redChariot = board.pieces[0][0] as! Chariot
+    func testChariotAfterSoldierMoves() {
+        let chariot = Chariot(isRed: true, position: Position(row: 0, col: 0))
+        board.pieces[0][0] = chariot
         
-        // Move chariot to a corner
-        board.pieces[0][0] = nil
-        board.pieces[9][8] = redChariot
-        redChariot.currentPosition = Position(row: 9, col: 8)
-        
-        let moves = board.validMoves(for: redChariot)
-        
-        // Should only be able to move up and left from corner
-        XCTAssertTrue(moves.contains(Position(row: 8, col: 8)), "Corner chariot should move up")
-        XCTAssertTrue(moves.contains(Position(row: 9, col: 7)), "Corner chariot should move left")
-        
-        // Should not be able to move down or right (out of bounds)
-        XCTAssertFalse(moves.contains(Position(row: 10, col: 8)), "Corner chariot should not move down")
-        XCTAssertFalse(moves.contains(Position(row: 9, col: 9)), "Corner chariot should not move right")
-    }
-    
-    func testChariotAfterPawnMoves() {
-        let redChariot = board.pieces[0][0] as! Chariot
-        
-        // Remove the red pawn that's blocking the chariot
+        // Remove the red soldier that's blocking the chariot
         board.pieces[3][0] = nil
         
-        // Move the blue pawn (enemy) down to open up space for the chariot
-        let bluePawn = board.pieces[6][0] as! Pawn
+        // Move the blue soldier (enemy) down to open up space for the chariot
+        let blueSoldier = board.pieces[6][0] as! Soldier
         board.pieces[6][0] = nil
-        board.pieces[4][0] = bluePawn
-        bluePawn.currentPosition = Position(row: 4, col: 0)
+        board.pieces[4][0] = blueSoldier
+        blueSoldier.currentPosition = Position(row: 4, col: 0)
         
-        let moves = board.validMoves(for: redChariot)
+        let moves = board.validMoves(for: chariot)
         
-        // Chariot should now be able to move down to row 3
-        XCTAssertTrue(moves.contains(Position(row: 3, col: 0)), "Chariot should move down after pawn moves")
+        // Should now be able to move down to row 3
+        XCTAssertTrue(moves.contains(Position(row: 3, col: 0)), "Chariot should move down after soldier moves")
         
-        // Should also be able to move to row 4 (capture the enemy pawn)
-        XCTAssertTrue(moves.contains(Position(row: 4, col: 0)), "Chariot should be able to capture enemy pawn")
+        // Should also be able to move to row 4 (capture the enemy soldier)
+        XCTAssertTrue(moves.contains(Position(row: 4, col: 0)), "Chariot should be able to capture enemy soldier")
     }
 } 

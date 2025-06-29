@@ -60,4 +60,10 @@ class Cannon: Piece {
 //        
 //        return moves
 //    }
+    
+    override var movementRules: [MovementRule] {
+        return [
+            MovementRule(direction: .custom, maxDistance: 0, requiresPlatform: true, palaceRestricted: false, blockingRules: .jumpOver)
+        ]
+    }
 } 
