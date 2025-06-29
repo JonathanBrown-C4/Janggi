@@ -70,4 +70,46 @@ final class ElephantTests: XCTestCase {
         let moves = board.validMoves(for: elephant)
         XCTAssertEqual(moves.count, 0, "Elephant should have no moves when all directions are blocked")
     }
+    
+    func testDebugElephantMovement() {
+        let elephant = Elephant(isRed: true, position: Position(row: 4, col: 4))
+        board.pieces[4][4] = elephant
+        
+        // Print movement rules
+        print("Elephant movement rules: \(elephant.movementRules)")
+        for (index, rule) in elephant.movementRules.enumerated() {
+            print("Rule \(index): direction=\(rule.direction), maxDistance=\(rule.maxDistance), blockingRules=\(rule.blockingRules)")
+        }
+        
+        // Get actual moves
+        let moves = board.validMoves(for: elephant)
+        print("Actual Elephant moves: \(moves)")
+        
+        // Expected moves (diagonal 2 steps only)
+        let expectedMoves = [
+            Position(row: 2, col: 6), // Up-right (diagonal 2 steps)
+            Position(row: 2, col: 2), // Up-left (diagonal 2 steps)
+            Position(row: 6, col: 6), // Down-right (diagonal 2 steps)
+            Position(row: 6, col: 2)  // Down-left (diagonal 2 steps)
+        ]
+        print("Expected Elephant moves: \(expectedMoves)")
+        
+        // Check if moves contain any orthogonal moves (which would be wrong)
+        let orthogonalMoves = moves.filter { move in
+            let rowDiff = abs(move.row - 4)
+            let colDiff = abs(move.col - 4)
+            return (rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1)
+        }
+        
+        if !orthogonalMoves.isEmpty {
+            print("ERROR: Elephant has orthogonal moves: \(orthogonalMoves)")
+        }
+        
+        // Check if moves contain correct diagonal moves
+        for expected in expectedMoves {
+            XCTAssertTrue(moves.contains(expected), "Elephant should be able to move to \(expected)")
+        }
+        
+        XCTAssertEqual(moves.count, 4, "Elephant should have exactly 4 diagonal moves")
+    }
 } 

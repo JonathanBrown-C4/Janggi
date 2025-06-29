@@ -103,4 +103,58 @@ struct BoardView: View {
     ]
     
     return BoardView(board: testBoard, squareSize: 40)
+}
+
+#Preview("Elephant Movement Test") {
+    let testBoard = Board()
+    // Clear the board
+    for row in 0..<10 {
+        for col in 0..<9 {
+            testBoard.pieces[row][col] = nil
+        }
+    }
+    // Set up Elephant at center to test movement
+    testBoard.pieces[4][4] = Elephant(isRed: true, position: Position(row: 4, col: 4))
+    testBoard.selectedPiece = Position(row: 4, col: 4)
+    
+    // Manually set the expected Elephant moves (diagonal 2 steps)
+    testBoard.validMoves = [
+        Position(row: 2, col: 6), // Up-right (diagonal 2 steps)
+        Position(row: 2, col: 2), // Up-left (diagonal 2 steps)
+        Position(row: 6, col: 6), // Down-right (diagonal 2 steps)
+        Position(row: 6, col: 2)  // Down-left (diagonal 2 steps)
+    ]
+    
+    return BoardView(board: testBoard, squareSize: 40)
+}
+
+#Preview("Elephant Movement Debug") {
+    let testBoard = Board()
+    // Clear the board
+    for row in 0..<10 {
+        for col in 0..<9 {
+            testBoard.pieces[row][col] = nil
+        }
+    }
+    // Set up Elephant at center to test movement
+    let elephant = Elephant(isRed: true, position: Position(row: 4, col: 4))
+    testBoard.pieces[4][4] = elephant
+    testBoard.selectedPiece = Position(row: 4, col: 4)
+    
+    // Get actual moves from the board
+    let actualMoves = testBoard.validMoves(for: elephant)
+    print("Actual Elephant moves: \(actualMoves)")
+    
+    // Expected moves (diagonal 2 steps)
+    let expectedMoves = [
+        Position(row: 2, col: 6), // Up-right (diagonal 2 steps)
+        Position(row: 2, col: 2), // Up-left (diagonal 2 steps)
+        Position(row: 6, col: 6), // Down-right (diagonal 2 steps)
+        Position(row: 6, col: 2)  // Down-left (diagonal 2 steps)
+    ]
+    print("Expected Elephant moves: \(expectedMoves)")
+    
+    testBoard.validMoves = actualMoves
+    
+    return BoardView(board: testBoard, squareSize: 40)
 } 
