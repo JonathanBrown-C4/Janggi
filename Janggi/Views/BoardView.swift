@@ -154,7 +154,27 @@ struct BoardView: View {
     ]
     print("Expected Elephant moves: \(expectedMoves)")
     
+    // Check for orthogonal moves (which should NOT exist)
+    let orthogonalMoves = actualMoves.filter { move in
+        let rowDiff = abs(move.row - 4)
+        let colDiff = abs(move.col - 4)
+        return (rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1)
+    }
+    
+    if !orthogonalMoves.isEmpty {
+        print("ERROR: Elephant has orthogonal moves: \(orthogonalMoves)")
+    }
+    
+    // Show actual moves in the UI
     testBoard.validMoves = actualMoves
     
-    return BoardView(board: testBoard, squareSize: 40)
+    return VStack {
+        Text("Elephant at (4,4)")
+            .font(.headline)
+        Text("Actual moves: \(actualMoves.count)")
+            .foregroundColor(orthogonalMoves.isEmpty ? .green : .red)
+        Text("Expected: 4 diagonal moves only")
+            .font(.caption)
+        BoardView(board: testBoard, squareSize: 40)
+    }
 } 
