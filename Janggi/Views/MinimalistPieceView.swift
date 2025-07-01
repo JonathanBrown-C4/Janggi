@@ -26,13 +26,13 @@ struct MinimalistPieceView: View {
         case .guard_:
             Image(systemName: "shield.fill")
         case .elephant:
-            Image(systemName: "leaf.fill")
+            Image(systemName: "face.smiling.fill")
         case .horse:
-            Image(systemName: "bolt.fill")
+            Image(systemName: "hare.fill")
         case .chariot:
-            Image(systemName: "car.fill")
+            Image(systemName: "car.2.fill")
         case .cannon:
-            Image(systemName: "circle.fill")
+            Image(systemName: "cylinder.fill")
         case .soldier:
             Image(systemName: "person.fill")
         }
