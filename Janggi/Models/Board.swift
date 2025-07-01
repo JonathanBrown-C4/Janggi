@@ -21,6 +21,10 @@ class Board: ObservableObject {
     @Published var validMoves: [Position] = []
     @Published var capturedRedPieces: [Piece] = []
     @Published var capturedBluePieces: [Piece] = []
+    @Published var redGeneralInCheck: Bool = false
+    @Published var blueGeneralInCheck: Bool = false
+    @Published var showCheckToast: Bool = false
+    @Published var checkToastMessage: String = ""
     
     init() {
         setupBoard()
@@ -34,6 +38,10 @@ class Board: ObservableObject {
         validMoves = []
         capturedRedPieces = []
         capturedBluePieces = []
+        redGeneralInCheck = false
+        blueGeneralInCheck = false
+        showCheckToast = false
+        checkToastMessage = ""
         
         // Clear the board
         pieces = Array(repeating: Array(repeating: nil, count: 9), count: 10)
@@ -135,9 +143,8 @@ class Board: ObservableObject {
         pieces[from.row][from.col] = nil
         piece.currentPosition = to
         
-        // Only toggle turn and update game state after successful move
+        // Only toggle turn after successful move (no automatic check detection)
         isRedTurn.toggle()
-        updateGameState()
         
         // Clear selection and valid moves
         selectedPiece = nil
@@ -168,12 +175,6 @@ class Board: ObservableObject {
             return
         }
         
-        // Then check for check
-        if isGeneralInCheck(for: .red) || isGeneralInCheck(for: .blue) {
-            gameState = .check
-            return
-        }
-        
         // Then check for bikjang
         if isBikjang() {
             gameState = .stalemate
@@ -188,6 +189,38 @@ class Board: ObservableObject {
         
         // If none of the above, the game is in playing state
         gameState = .playing
+    }
+    
+    func checkForCheck() {
+        // Check if the opponent's general is in check
+        let opponentColor: PieceColor = isRedTurn ? .blue : .red
+        let isInCheck = isGeneralInCheck(for: opponentColor)
+        
+        // Update the check state
+        if opponentColor == .red {
+            redGeneralInCheck = isInCheck
+        } else {
+            blueGeneralInCheck = isInCheck
+        }
+        
+        // Show toast message
+        if isInCheck {
+            let generalName = opponentColor == .red ? "Red" : "Blue"
+            checkToastMessage = "\(generalName) General is in check!"
+            showCheckToast = true
+            
+            // Hide toast after 3 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                self.showCheckToast = false
+            }
+        } else {
+            // Clear check state if not in check
+            if opponentColor == .red {
+                redGeneralInCheck = false
+            } else {
+                blueGeneralInCheck = false
+            }
+        }
     }
     
     func isGeneralInCheck(for color: PieceColor) -> Bool {

@@ -16,6 +16,8 @@ enum PieceSize {
 
 struct PieceView: View {
     let piece: Piece
+    let isInCheck: Bool
+    let isSelected: Bool
 
     var body: some View {
         Image(piece.imageName)
@@ -23,12 +25,22 @@ struct PieceView: View {
             .scaledToFit()
             .padding(6)
             .frame(width: piece.size.size, height: piece.size.size)
-            .background(Hexagon().fill(Color.white))
+            .background(Hexagon().fill(backgroundColor))
             .clipShape(Hexagon())
             .overlay(
                 Hexagon()
                     .stroke(Color(.darkGray), lineWidth: 2)
             )
+    }
+    
+    private var backgroundColor: Color {
+        if isSelected {
+            return Color.blue.opacity(0.3)
+        } else if isInCheck {
+            return Color.red.opacity(0.3)
+        } else {
+            return Color.white
+        }
     }
 }
 
@@ -55,8 +67,9 @@ struct Hexagon: Shape {
 
 #Preview {
     VStack {
-        PieceView(piece: General(isRed: true, position: Position(row: 0, col: 4)))
-        PieceView(piece: Horse(isRed: false, position: Position(row: 9, col: 1)))
-        PieceView(piece: Soldier(isRed: true, position: Position(row: 3, col: 0)))
+        PieceView(piece: General(isRed: true, position: Position(row: 0, col: 4)), isInCheck: false, isSelected: false)
+        PieceView(piece: Horse(isRed: false, position: Position(row: 9, col: 1)), isInCheck: false, isSelected: true)
+        PieceView(piece: Soldier(isRed: true, position: Position(row: 3, col: 0)), isInCheck: false, isSelected: false)
+        PieceView(piece: General(isRed: false, position: Position(row: 8, col: 4)), isInCheck: true, isSelected: false)
     }
 } 

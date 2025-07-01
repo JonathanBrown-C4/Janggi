@@ -11,7 +11,15 @@ struct PieceGridView: View {
                 if let piece = board.pieces[row][col] {
                     let y = CGFloat(row) * grid.cellSize
                     let x = CGFloat(col) * grid.cellSize
-                    PieceView(piece: piece)
+                    
+                    // Check if this piece is a general in check
+                    let isInCheck = (piece.imageName == "red_general" && board.redGeneralInCheck) ||
+                                   (piece.imageName == "blue_general" && board.blueGeneralInCheck)
+                    
+                    // Check if this piece is selected
+                    let isSelected = board.selectedPiece?.row == row && board.selectedPiece?.col == col
+                    
+                    PieceView(piece: piece, isInCheck: isInCheck, isSelected: isSelected)
                         .position(x: x, y: y)
                         .onTapGesture {
                             onSquareTap(Position(row: row, col: col))

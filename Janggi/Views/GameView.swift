@@ -22,17 +22,54 @@ struct GameView: View {
                 Text("Janggi")
                     .font(.largeTitle)
                     .padding(.top, 8)
+                // Reset Board button
+                Button(action: { board.setupBoard() }) {
+                    Text("Reset Board")
+                        .font(.headline)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                .padding(.bottom, 8)
                 // Game state display
                 Group {
                     switch board.gameState {
                     case .playing:
-                        Text(board.isRedTurn ? "Red's Turn" : "Blue's Turn")
-                            .font(.title2)
-                            .foregroundColor(board.isRedTurn ? .red : .blue)
+                        VStack(spacing: 8) {
+                            Text(board.isRedTurn ? "Red's Turn" : "Blue's Turn")
+                                .font(.title2)
+                                .foregroundColor(board.isRedTurn ? .red : .blue)
+                            
+                            // Manual check button
+                            Button("In Check?") {
+                                board.checkForCheck()
+                            }
+                            .font(.headline)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                        }
                     case .check:
-                        Text("\(board.isRedTurn ? "Red" : "Blue") is in Check!")
-                            .font(.title2)
-                            .foregroundColor(.red)
+                        VStack(spacing: 8) {
+                            Text("\(board.isRedTurn ? "Red" : "Blue") is in Check!")
+                                .font(.title2)
+                                .foregroundColor(.red)
+                            
+                            // Manual check button
+                            Button("In Check?") {
+                                board.checkForCheck()
+                            }
+                            .font(.headline)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                        }
                     case .checkmate:
                         Text("Checkmate! \(board.isRedTurn ? "Blue" : "Red") wins!")
                             .font(.title2)
@@ -104,6 +141,23 @@ struct GameView: View {
                 .cornerRadius(20)
                 .padding(.horizontal, 24)
                 .transition(.move(edge: .top))
+            }
+            
+            // Toast notification for check
+            if board.showCheckToast {
+                VStack {
+                    Spacer()
+                    Text(board.checkToastMessage)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.red.opacity(0.8))
+                        .cornerRadius(10)
+                        .padding(.bottom, 100)
+                }
+                .transition(.move(edge: .bottom))
+                .animation(.easeInOut(duration: 0.3), value: board.showCheckToast)
             }
         }
         .padding()
