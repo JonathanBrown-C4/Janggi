@@ -29,17 +29,48 @@ struct PieceView: View {
             .clipShape(Hexagon())
             .overlay(
                 Hexagon()
-                    .stroke(Color(.darkGray), lineWidth: 2)
+                    .stroke(outlineColor, lineWidth: outlineWidth)
             )
+            .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: 0)
     }
     
     private var backgroundColor: Color {
-        if isSelected {
-            return Color.blue.opacity(0.3)
-        } else if isInCheck {
+        if isInCheck {
             return Color.red.opacity(0.3)
         } else {
             return Color.white
+        }
+    }
+    
+    private var outlineColor: Color {
+        if isSelected {
+            return Color.blue
+        } else {
+            return Color(.darkGray)
+        }
+    }
+    
+    private var outlineWidth: CGFloat {
+        if isSelected {
+            return 3
+        } else {
+            return 2
+        }
+    }
+    
+    private var shadowColor: Color {
+        if isSelected {
+            return Color.blue.opacity(0.6)
+        } else {
+            return Color.clear
+        }
+    }
+    
+    private var shadowRadius: CGFloat {
+        if isSelected {
+            return 8
+        } else {
+            return 0
         }
     }
 }
