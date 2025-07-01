@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PieceGridView: View {
     @ObservedObject var board: Board
+    @ObservedObject var settings: Settings
     let grid: GridGeometry
     let onSquareTap: (Position) -> Void
     
@@ -22,7 +23,7 @@ struct PieceGridView: View {
                     // Check if this piece is capturable
                     let isCapturable = board.capturablePieces.contains(where: { $0.row == row && $0.col == col })
                     
-                    PieceView(piece: piece, isInCheck: isInCheck, isSelected: isSelected, isCapturable: isCapturable)
+                    PieceView(piece: piece, settings: settings, isInCheck: isInCheck, isSelected: isSelected, isCapturable: isCapturable)
                         .position(x: x, y: y)
                         .onTapGesture {
                             onSquareTap(Position(row: row, col: col))
@@ -42,6 +43,7 @@ struct PieceGridView: View {
         
         PieceGridView(
             board: Board(),
+            settings: Settings(),
             grid: grid,
             onSquareTap: { _ in }
         )

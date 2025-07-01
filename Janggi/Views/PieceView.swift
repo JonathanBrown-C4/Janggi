@@ -16,23 +16,40 @@ enum PieceSize {
 
 struct PieceView: View {
     let piece: Piece
+    @ObservedObject var settings: Settings
     let isInCheck: Bool
     let isSelected: Bool
     let isCapturable: Bool
 
     var body: some View {
-        Image(piece.imageName)
-            .resizable()
-            .scaledToFit()
-            .padding(6)
-            .frame(width: piece.size.size, height: piece.size.size)
-            .background(Hexagon().fill(backgroundColor))
-            .clipShape(Hexagon())
-            .overlay(
-                Hexagon()
-                    .stroke(outlineColor, lineWidth: outlineWidth)
-            )
-            .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: 0)
+        Group {
+            if settings.useTraditionalPieces {
+                // Traditional piece images
+                Image(piece.imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(6)
+                    .frame(width: piece.size.size, height: piece.size.size)
+                    .background(Hexagon().fill(backgroundColor))
+                    .clipShape(Hexagon())
+                    .overlay(
+                        Hexagon()
+                            .stroke(outlineColor, lineWidth: outlineWidth)
+                    )
+                    .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: 0)
+            } else {
+                // Minimalist icon pieces
+                MinimalistPieceView(piece: piece, isRed: piece.isRed)
+                    .frame(width: piece.size.size, height: piece.size.size)
+                    .background(Hexagon().fill(backgroundColor))
+                    .clipShape(Hexagon())
+                    .overlay(
+                        Hexagon()
+                            .stroke(outlineColor, lineWidth: outlineWidth)
+                    )
+                    .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: 0)
+            }
+        }
     }
     
     private var backgroundColor: Color {
@@ -103,9 +120,9 @@ struct Hexagon: Shape {
 
 #Preview {
     VStack {
-        PieceView(piece: General(isRed: true, position: Position(row: 0, col: 4)), isInCheck: false, isSelected: false, isCapturable: false)
-        PieceView(piece: Horse(isRed: false, position: Position(row: 9, col: 1)), isInCheck: false, isSelected: true, isCapturable: false)
-        PieceView(piece: Soldier(isRed: true, position: Position(row: 3, col: 0)), isInCheck: false, isSelected: false, isCapturable: true)
-        PieceView(piece: General(isRed: false, position: Position(row: 8, col: 4)), isInCheck: true, isSelected: false, isCapturable: false)
+        PieceView(piece: General(isRed: true, position: Position(row: 0, col: 4)), settings: Settings(), isInCheck: false, isSelected: false, isCapturable: false)
+        PieceView(piece: Horse(isRed: false, position: Position(row: 9, col: 1)), settings: Settings(), isInCheck: false, isSelected: true, isCapturable: false)
+        PieceView(piece: Soldier(isRed: true, position: Position(row: 3, col: 0)), settings: Settings(), isInCheck: false, isSelected: false, isCapturable: true)
+        PieceView(piece: General(isRed: false, position: Position(row: 8, col: 4)), settings: Settings(), isInCheck: true, isSelected: false, isCapturable: false)
     }
 } 

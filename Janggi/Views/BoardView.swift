@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BoardView: View {
     @ObservedObject var board: Board
+    @ObservedObject var settings: Settings
     let squareSize: CGFloat
     
     var body: some View {
@@ -18,7 +19,7 @@ struct BoardView: View {
                     // Board background
                     Color(red: 0.8, green: 0.7, blue: 0.5)
                     // Grid, star points, and tap overlays
-                    BoardGridView(board: board, grid: grid, onSquareTap: handleSquareTap)
+                    BoardGridView(board: board, settings: settings, grid: grid, onSquareTap: handleSquareTap)
                     // Top palace: center at (1,4) in grid lines
                     PalaceView(size: cellSize * 2)
                         .frame(width: cellSize * 2, height: cellSize * 2)
@@ -28,7 +29,7 @@ struct BoardView: View {
                         .frame(width: cellSize * 2, height: cellSize * 2)
                         .position(x: cellSize * 4, y: cellSize * 8)
                     // Pieces (should be on top)
-                    PieceGridView(board: board, grid: grid, onSquareTap: handleSquareTap)
+                    PieceGridView(board: board, settings: settings, grid: grid, onSquareTap: handleSquareTap)
                 }
                 .frame(width: boardWidth, height: boardHeight)
                 Spacer()
@@ -53,7 +54,7 @@ struct BoardView: View {
 }
 
 #Preview {
-    BoardView(board: Board(), squareSize: 40)
+    BoardView(board: Board(), settings: Settings(), squareSize: 40)
 }
 
 #Preview("Horse Capture Test") {
@@ -68,7 +69,7 @@ struct BoardView: View {
     testBoard.pieces[4][5] = Horse(isRed: true, position: Position(row: 4, col: 5))
     testBoard.pieces[2][6] = Soldier(isRed: false, position: Position(row: 2, col: 6))
     
-    return BoardView(board: testBoard, squareSize: 40)
+    return BoardView(board: testBoard, settings: Settings(), squareSize: 40)
 }
 
 #Preview("Move Indicators Test") {
@@ -102,7 +103,7 @@ struct BoardView: View {
         Position(row: 4, col: 8)  // Right
     ]
     
-    return BoardView(board: testBoard, squareSize: 40)
+    return BoardView(board: testBoard, settings: Settings(), squareSize: 40)
 }
 
 #Preview("Elephant Movement Test") {
@@ -125,7 +126,7 @@ struct BoardView: View {
         Position(row: 6, col: 2)  // Down-left (diagonal 2 steps)
     ]
     
-    return BoardView(board: testBoard, squareSize: 40)
+    return BoardView(board: testBoard, settings: Settings(), squareSize: 40)
 }
 
 #Preview("Elephant Movement Debug") {
@@ -175,7 +176,7 @@ struct BoardView: View {
             .foregroundColor(orthogonalMoves.isEmpty ? .green : .red)
         Text("Expected: 4 diagonal moves only")
             .font(.caption)
-        BoardView(board: testBoard, squareSize: 40)
+        BoardView(board: testBoard, settings: Settings(), squareSize: 40)
     }
 }
 
@@ -277,7 +278,7 @@ struct BoardView: View {
             }
         }
         
-        BoardView(board: testBoard, squareSize: 30)
+        BoardView(board: testBoard, settings: Settings(), squareSize: 30)
     }
     .padding()
 } 

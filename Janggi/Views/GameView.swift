@@ -2,15 +2,26 @@ import SwiftUI
 
 struct GameView: View {
     @StateObject private var board = Board()
+    @StateObject private var settings = Settings()
     private let squareSize: CGFloat = 40
     @State private var showCapturedOverlay = false
+    @State private var showSettings = false
     
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                // Top bar with expand/collapse button
+                // Top bar with expand/collapse button and settings
                 HStack {
+                    Button(action: { showSettings = true }) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title2)
+                            .foregroundColor(.blue)
+                    }
+                    .padding(.top, 8)
+                    .padding(.leading, 16)
+                    
                     Spacer()
+                    
                     Button(action: { withAnimation { showCapturedOverlay.toggle() } }) {
                         Image(systemName: showCapturedOverlay ? "chevron.up" : "chevron.down")
                         Text(showCapturedOverlay ? "Hide Captured" : "Show Captured")
@@ -87,7 +98,7 @@ struct GameView: View {
                         .fill(Color(red: 0.8, green: 0.7, blue: 0.5))
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(Color(.darkGray), lineWidth: 6)
-                    BoardView(board: board, squareSize: squareSize)
+                    BoardView(board: board, settings: settings, squareSize: squareSize)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .padding(24)
@@ -161,6 +172,9 @@ struct GameView: View {
             }
         }
         .padding()
+        .sheet(isPresented: $showSettings) {
+            SettingsView(settings: settings)
+        }
     }
     
     private func handleSquareTap(at position: Position) {
