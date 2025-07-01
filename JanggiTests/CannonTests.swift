@@ -95,4 +95,63 @@ final class CannonTests: XCTestCase {
         XCTAssertTrue(moves.contains(Position(row: 3, col: 4)), "Blue cannon should move beyond platform")
         XCTAssertTrue(moves.contains(Position(row: 2, col: 4)), "Blue cannon should move beyond platform")
     }
+    
+    func testCannotUseCannonAsPlatform() {
+        let cannon = Cannon(isRed: true, position: Position(row: 4, col: 2))
+        board.pieces[4][2] = cannon
+        // Add another cannon as platform at (4,4)
+        board.pieces[4][4] = Cannon(isRed: true, position: Position(row: 4, col: 4))
+        let moves = board.validMoves(for: cannon)
+        // Cannon should not be able to use another cannon as platform
+        XCTAssertEqual(moves.count, 0, "Cannon should not be able to use another cannon as platform")
+    }
+    
+    func testCannotCaptureCannon() {
+        let cannon = Cannon(isRed: true, position: Position(row: 4, col: 2))
+        board.pieces[4][2] = cannon
+        // Add platform at (4,4)
+        board.pieces[4][4] = Soldier(isRed: true, position: Position(row: 4, col: 4))
+        // Add enemy cannon at (4,5)
+        board.pieces[4][5] = Cannon(isRed: false, position: Position(row: 4, col: 5))
+        let moves = board.validMoves(for: cannon)
+        // Cannon should not be able to capture another cannon
+        XCTAssertFalse(moves.contains(Position(row: 4, col: 5)), "Cannon should not be able to capture another cannon")
+    }
+    
+    func testDiagonalMovementInPalace() {
+        let cannon = Cannon(isRed: true, position: Position(row: 0, col: 3)) // Red palace corner
+        board.pieces[0][3] = cannon
+        // Add platform at center of palace (1,4)
+        board.pieces[1][4] = Soldier(isRed: true, position: Position(row: 1, col: 4))
+        let moves = board.validMoves(for: cannon)
+        // Should be able to move diagonally to opposite corner
+        XCTAssertTrue(moves.contains(Position(row: 2, col: 5)), "Cannon should move diagonally in palace")
+    }
+    
+    func testDiagonalMovementInPalaceWithEnemyCapture() {
+        let cannon = Cannon(isRed: true, position: Position(row: 0, col: 3)) // Red palace corner
+        board.pieces[0][3] = cannon
+        // Add platform at center of palace (1,4)
+        board.pieces[1][4] = Soldier(isRed: true, position: Position(row: 1, col: 4))
+        // Add enemy at opposite corner (2,5)
+        board.pieces[2][5] = Soldier(isRed: false, position: Position(row: 2, col: 5))
+        let moves = board.validMoves(for: cannon)
+        // Should be able to capture enemy diagonally
+        XCTAssertTrue(moves.contains(Position(row: 2, col: 5)), "Cannon should capture enemy diagonally in palace")
+    }
+    
+    func testNoDiagonalMovementOutsidePalace() {
+        let cannon = Cannon(isRed: true, position: Position(row: 4, col: 4)) // Outside palace
+        board.pieces[4][4] = cannon
+        // Add platform at (4,6)
+        board.pieces[4][6] = Soldier(isRed: true, position: Position(row: 4, col: 6))
+        let moves = board.validMoves(for: cannon)
+        // Should not have diagonal moves outside palace
+        let diagonalMoves = moves.filter { move in
+            let rowDiff = abs(move.row - 4)
+            let colDiff = abs(move.col - 4)
+            return rowDiff == colDiff && rowDiff > 0
+        }
+        XCTAssertEqual(diagonalMoves.count, 0, "Cannon should not move diagonally outside palace")
+    }
 } 

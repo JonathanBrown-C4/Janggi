@@ -678,9 +678,19 @@ class Board: ObservableObject {
         
         // Cannon logic
         if piece is Cannon {
-            let directions = [(0, 1), (0, -1), (1, 0), (-1, 0)] // right, left, down, up
+            let isInPalace = isInPalace(start, isRed: piece.isRed)
             
-            for (rowDelta, colDelta) in directions {
+            // Orthogonal directions
+            let orthogonalDirections = [(0, 1), (0, -1), (1, 0), (-1, 0)] // right, left, down, up
+            
+            // Add diagonal directions if in palace
+            var allDirections = orthogonalDirections
+            if isInPalace {
+                let diagonalDirections = [(1, 1), (1, -1), (-1, 1), (-1, -1)] // down-right, down-left, up-right, up-left
+                allDirections.append(contentsOf: diagonalDirections)
+            }
+            
+            for (rowDelta, colDelta) in allDirections {
                 var currentRow = start.row + rowDelta
                 var currentCol = start.col + colDelta
                 var foundPlatform = false
@@ -691,11 +701,19 @@ class Board: ObservableObject {
                     
                     if let pieceAtPos = pieceAt(pos) {
                         if !foundPlatform {
-                            // Found first platform (can be any piece)
+                            // Found first platform
+                            // Cannons cannot use other cannons as platforms
+                            if pieceAtPos is Cannon {
+                                break
+                            }
                             foundPlatform = true
                             platformPos = pos
                         } else {
                             // Found another piece after platform
+                            // Cannons cannot capture other cannons
+                            if pieceAtPos is Cannon {
+                                break
+                            }
                             if pieceAtPos.isRed != piece.isRed {
                                 // Can capture enemy piece on opposite side of platform
                                 moves.append(pos)
