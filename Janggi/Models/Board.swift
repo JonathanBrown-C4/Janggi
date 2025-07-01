@@ -611,22 +611,32 @@ class Board: ObservableObject {
         
         // Elephant logic
         if piece is Elephant {
-            let elephantMoves = [
-                (Position(row: start.row - 2, col: start.col + 2), Position(row: start.row - 1, col: start.col + 1)), // Up-right
-                (Position(row: start.row - 2, col: start.col - 2), Position(row: start.row - 1, col: start.col - 1)), // Up-left
-                (Position(row: start.row + 2, col: start.col + 2), Position(row: start.row + 1, col: start.col + 1)), // Down-right
-                (Position(row: start.row + 2, col: start.col - 2), Position(row: start.row + 1, col: start.col - 1))  // Down-left
-            ]
+            // Elephant moves: 1 step orthogonal, then 2 steps diagonal from that position
+            let orthogonalDirections = [(0, 1), (0, -1), (1, 0), (-1, 0)] // right, left, down, up
+            let diagonalDirections = [(1, 1), (1, -1), (-1, 1), (-1, -1)] // down-right, down-left, up-right, up-left
             
-            for (target, block) in elephantMoves {
-                if piece.isWithinBounds(target) && piece.isWithinBounds(block) {
-                    if pieceAt(block) == nil {
-                        if let targetPiece = pieceAt(target) {
-                            if targetPiece.isRed != piece.isRed {
-                                moves.append(target)
+            for (orthRowDelta, orthColDelta) in orthogonalDirections {
+                // First step: move one step orthogonally
+                let intermediateRow = start.row + orthRowDelta
+                let intermediateCol = start.col + orthColDelta
+                let intermediatePos = Position(row: intermediateRow, col: intermediateCol)
+                
+                // Check if intermediate position is valid and empty
+                if piece.isWithinBounds(intermediatePos) && pieceAt(intermediatePos) == nil {
+                    // Second step: from intermediate position, move 2 steps diagonally
+                    for (diagRowDelta, diagColDelta) in diagonalDirections {
+                        let targetRow = intermediateRow + (diagRowDelta * 2)
+                        let targetCol = intermediateCol + (diagColDelta * 2)
+                        let targetPos = Position(row: targetRow, col: targetCol)
+                        
+                        if piece.isWithinBounds(targetPos) {
+                            if let targetPiece = pieceAt(targetPos) {
+                                if targetPiece.isRed != piece.isRed {
+                                    moves.append(targetPos)
+                                }
+                            } else {
+                                moves.append(targetPos)
                             }
-                        } else {
-                            moves.append(target)
                         }
                     }
                 }

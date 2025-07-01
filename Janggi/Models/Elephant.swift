@@ -46,7 +46,7 @@ class Elephant: Piece {
     
     override var movementRules: [MovementRule] {
         return [
-            MovementRule(direction: .custom, maxDistance: 2, requiresPlatform: false, palaceRestricted: false, blockingRules: .centerBlock)
+            MovementRule(direction: .custom, maxDistance: 0, requiresPlatform: false, palaceRestricted: false, blockingRules: .centerBlock)
         ]
     }
 } 
