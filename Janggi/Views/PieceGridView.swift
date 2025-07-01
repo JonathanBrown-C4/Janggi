@@ -19,7 +19,10 @@ struct PieceGridView: View {
                     // Check if this piece is selected
                     let isSelected = board.selectedPiece?.row == row && board.selectedPiece?.col == col
                     
-                    PieceView(piece: piece, isInCheck: isInCheck, isSelected: isSelected)
+                    // Check if this piece is capturable
+                    let isCapturable = board.capturablePieces.contains(where: { $0.row == row && $0.col == col })
+                    
+                    PieceView(piece: piece, isInCheck: isInCheck, isSelected: isSelected, isCapturable: isCapturable)
                         .position(x: x, y: y)
                         .onTapGesture {
                             onSquareTap(Position(row: row, col: col))

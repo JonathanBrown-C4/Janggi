@@ -18,6 +18,7 @@ struct PieceView: View {
     let piece: Piece
     let isInCheck: Bool
     let isSelected: Bool
+    let isCapturable: Bool
 
     var body: some View {
         Image(piece.imageName)
@@ -45,13 +46,15 @@ struct PieceView: View {
     private var outlineColor: Color {
         if isSelected {
             return Color.blue
+        } else if isCapturable {
+            return Color.green
         } else {
             return Color(.darkGray)
         }
     }
     
     private var outlineWidth: CGFloat {
-        if isSelected {
+        if isSelected || isCapturable {
             return 3
         } else {
             return 2
@@ -61,13 +64,15 @@ struct PieceView: View {
     private var shadowColor: Color {
         if isSelected {
             return Color.blue.opacity(0.6)
+        } else if isCapturable {
+            return Color.green.opacity(0.6)
         } else {
             return Color.clear
         }
     }
     
     private var shadowRadius: CGFloat {
-        if isSelected {
+        if isSelected || isCapturable {
             return 8
         } else {
             return 0
@@ -98,9 +103,9 @@ struct Hexagon: Shape {
 
 #Preview {
     VStack {
-        PieceView(piece: General(isRed: true, position: Position(row: 0, col: 4)), isInCheck: false, isSelected: false)
-        PieceView(piece: Horse(isRed: false, position: Position(row: 9, col: 1)), isInCheck: false, isSelected: true)
-        PieceView(piece: Soldier(isRed: true, position: Position(row: 3, col: 0)), isInCheck: false, isSelected: false)
-        PieceView(piece: General(isRed: false, position: Position(row: 8, col: 4)), isInCheck: true, isSelected: false)
+        PieceView(piece: General(isRed: true, position: Position(row: 0, col: 4)), isInCheck: false, isSelected: false, isCapturable: false)
+        PieceView(piece: Horse(isRed: false, position: Position(row: 9, col: 1)), isInCheck: false, isSelected: true, isCapturable: false)
+        PieceView(piece: Soldier(isRed: true, position: Position(row: 3, col: 0)), isInCheck: false, isSelected: false, isCapturable: true)
+        PieceView(piece: General(isRed: false, position: Position(row: 8, col: 4)), isInCheck: true, isSelected: false, isCapturable: false)
     }
 } 

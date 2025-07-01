@@ -19,6 +19,7 @@ class Board: ObservableObject {
     @Published var gameState: GameState = .playing
     @Published var selectedPiece: Position?
     @Published var validMoves: [Position] = []
+    @Published var capturablePieces: [Position] = []
     @Published var capturedRedPieces: [Piece] = []
     @Published var capturedBluePieces: [Piece] = []
     @Published var redGeneralInCheck: Bool = false
@@ -36,6 +37,7 @@ class Board: ObservableObject {
         gameState = .playing
         selectedPiece = nil
         validMoves = []
+        capturablePieces = []
         capturedRedPieces = []
         capturedBluePieces = []
         redGeneralInCheck = false
@@ -149,6 +151,7 @@ class Board: ObservableObject {
         // Clear selection and valid moves
         selectedPiece = nil
         validMoves = []
+        capturablePieces = []
         
         return capturedPiece
     }
@@ -157,11 +160,20 @@ class Board: ObservableObject {
         guard let piece = pieceAt(position), piece.isRed == isRedTurn else {
             selectedPiece = nil
             validMoves = []
+            capturablePieces = []
             return
         }
         
         selectedPiece = position
         validMoves = validMoves(for: piece)
+        
+        // Identify capturable pieces (opponent pieces that can be captured)
+        capturablePieces = validMoves.compactMap { movePosition in
+            if let targetPiece = pieceAt(movePosition), targetPiece.isRed != piece.isRed {
+                return movePosition
+            }
+            return nil
+        }
     }
     
     func updateGameState() {
