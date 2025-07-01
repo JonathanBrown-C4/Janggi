@@ -467,7 +467,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WF6RY27JXU;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -486,7 +487,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WF6RY27JXU;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -504,7 +506,8 @@
 		11B7CD9F2C9F358A00ABAA3F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WF6RY27JXU;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -521,7 +524,8 @@
 		11B7CDA02C9F358A00ABAA3F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "";
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WF6RY27JXU;
 				GENERATE_INFOPLIST_FILE = YES;
