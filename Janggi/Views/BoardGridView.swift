@@ -43,22 +43,18 @@ struct BoardGridView: View {
                         .position(x: pos.x, y: pos.y)
                 }
                 
-                // Draw move indicators as circles at grid intersections (only if enabled)
-                if settings.showMoveHints {
-                    ForEach(board.validMoves, id: \.self) { movePosition in
-                        let pos = grid.point(for: movePosition)
-                        Circle()
-                            .fill(Color.green.opacity(0.6))
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.gray, lineWidth: 2)
-                            )
-                            .frame(width: 26, height: 26)
-                            .position(x: pos.x, y: pos.y)
-                            .onTapGesture {
-                                onSquareTap(movePosition)
-                            }
-                    }
+                // Draw move indicators as circles at grid intersections (always present for visual feedback)
+                ForEach(board.validMoves, id: \.self) { movePosition in
+                    let pos = grid.point(for: movePosition)
+                    Circle()
+                        .fill(settings.showMoveHints ? Color.green.opacity(0.6) : Color.clear)
+                        .overlay(
+                            Circle()
+                                .stroke(settings.showMoveHints ? Color.gray : Color.clear, lineWidth: 2)
+                        )
+                        .opacity(settings.showMoveHints ? 1 : 0)
+                        .frame(width: 26, height: 26)
+                        .position(x: pos.x, y: pos.y)
                 }
                 
                 // Draw selected piece indicator (only if move hints are enabled)
@@ -74,22 +70,22 @@ struct BoardGridView: View {
                         .position(x: pos.x, y: pos.y)
                 }
                 
-                // Overlay tap areas for piece selection (invisible but tappable)
-                VStack(spacing: 0) {
-                    ForEach(0..<(grid.rows-1)) { row in
-                        HStack(spacing: 0) {
-                            ForEach(0..<(grid.columns-1)) { col in
-                                let position = Position(row: row, col: col)
-                                Rectangle()
-                                    .fill(Color.clear)
-                                    .frame(width: grid.cellSize, height: grid.cellSize)
-                                    .onTapGesture {
-                                        onSquareTap(position)
-                                    }
+                // Overlay tap area for piece selection (single transparent layer)
+                Rectangle()
+                    .fill(Color.clear)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onEnded { value in
+                                let x = value.location.x
+                                let y = value.location.y
+                                let col = Int(round(x / grid.cellSize))
+                                let row = Int(round(y / grid.cellSize))
+                                if row >= 0 && row < grid.rows && col >= 0 && col < grid.columns {
+                                    onSquareTap(Position(row: row, col: col))
+                                }
                             }
-                        }
-                    }
-                }
+                    )
             }
         }
     }

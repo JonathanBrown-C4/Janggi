@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var settings: Settings
     @Environment(\.dismiss) private var dismiss
+    var onResetBoard: (() -> Void)? = nil
     
     var body: some View {
         NavigationView {
@@ -13,6 +14,13 @@ struct SettingsView: View {
                     
                     Toggle("Use Traditional Pieces", isOn: $settings.useTraditionalPieces)
                         .tint(.blue)
+                    
+                    Button(action: {
+                        onResetBoard?()
+                    }) {
+                        Text("Reset Board")
+                            .foregroundColor(.red)
+                    }
                 }
                 
                 Section(header: Text("About")) {

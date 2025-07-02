@@ -63,7 +63,7 @@ struct PieceView: View {
     private var outlineColor: Color {
         if isSelected {
             return Color.blue
-        } else if isCapturable {
+        } else if isCapturable && settings.showMoveHints {
             return Color.green
         } else {
             return Color(.darkGray)
@@ -71,7 +71,7 @@ struct PieceView: View {
     }
     
     private var outlineWidth: CGFloat {
-        if isSelected || isCapturable {
+        if isSelected || (isCapturable && settings.showMoveHints) {
             return 3
         } else {
             return 2
@@ -81,7 +81,7 @@ struct PieceView: View {
     private var shadowColor: Color {
         if isSelected {
             return Color.blue.opacity(0.6)
-        } else if isCapturable {
+        } else if isCapturable && settings.showMoveHints {
             return Color.green.opacity(0.6)
         } else {
             return Color.clear
@@ -89,7 +89,7 @@ struct PieceView: View {
     }
     
     private var shadowRadius: CGFloat {
-        if isSelected || isCapturable {
+        if isSelected || (isCapturable && settings.showMoveHints) {
             return 8
         } else {
             return 0

@@ -32,18 +32,8 @@ struct GameView: View {
                 // Title
                 Text("Janggi")
                     .font(.largeTitle)
+                
                     .padding(.top, 8)
-                // Reset Board button
-                Button(action: { board.setupBoard() }) {
-                    Text("Reset Board")
-                        .font(.headline)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                }
-                .padding(.bottom, 8)
                 // Game state display
                 Group {
                     switch board.gameState {
@@ -173,7 +163,7 @@ struct GameView: View {
         }
         .padding()
         .sheet(isPresented: $showSettings) {
-            SettingsView(settings: settings)
+            SettingsView(settings: settings, onResetBoard: { board.setupBoard() })
         }
     }
     
