@@ -25,6 +25,7 @@ class Board: ObservableObject {
     @Published var redGeneralInCheck: Bool = false
     @Published var blueGeneralInCheck: Bool = false
     @Published var showMessage: ((String) -> Void)?
+    var pieceCaptureEvent: ((Piece) -> Void)?
     
     init() {
         setupBoard()
@@ -133,6 +134,7 @@ class Board: ObservableObject {
                 capturedBluePieces.append(captured)
             }
             SoundManager.shared.playCaptureSound()
+            pieceCaptureEvent?(captured)
         } else {
             SoundManager.shared.playMoveSound()
         }
