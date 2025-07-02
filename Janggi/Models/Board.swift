@@ -24,8 +24,7 @@ class Board: ObservableObject {
     @Published var capturedBluePieces: [Piece] = []
     @Published var redGeneralInCheck: Bool = false
     @Published var blueGeneralInCheck: Bool = false
-    @Published var showCheckToast: Bool = false
-    @Published var checkToastMessage: String = ""
+    @Published var showMessage: ((String) -> Void)?
     
     init() {
         setupBoard()
@@ -42,8 +41,6 @@ class Board: ObservableObject {
         capturedBluePieces = []
         redGeneralInCheck = false
         blueGeneralInCheck = false
-        showCheckToast = false
-        checkToastMessage = ""
         
         // Clear the board
         pieces = Array(repeating: Array(repeating: nil, count: 9), count: 10)
@@ -215,24 +212,10 @@ class Board: ObservableObject {
             blueGeneralInCheck = isInCheck
         }
         
-        // Show toast message
-        if isInCheck {
-            let generalName = opponentColor == .red ? "Red" : "Blue"
-            checkToastMessage = "\(generalName) General is in check!"
-            showCheckToast = true
-            
-            // Hide toast after 3 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                self.showCheckToast = false
-            }
-        } else {
-            // Clear check state if not in check
-            if opponentColor == .red {
-                redGeneralInCheck = false
-            } else {
-                blueGeneralInCheck = false
-            }
-        }
+        // Show toast message (always)
+        let generalName = opponentColor == .red ? "Red" : "Blue"
+        let message = isInCheck ? "\(generalName) General is in check!" : "\(generalName) General is safe."
+        showMessage?(message)
     }
     
     func isGeneralInCheck(for color: PieceColor) -> Bool {

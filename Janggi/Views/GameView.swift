@@ -3,6 +3,7 @@ import SwiftUI
 struct GameView: View {
     @StateObject private var board = Board()
     @StateObject private var settings = Settings()
+    @StateObject private var messageManager = MessageManager()
     private let squareSize: CGFloat = 40
     @State private var showCapturedOverlay = false
     @State private var showSettings = false
@@ -144,34 +145,33 @@ struct GameView: View {
                 .transition(.move(edge: .top))
             }
             
-            // Toast notification for check
-            if board.showCheckToast {
-                VStack {
-                    Spacer()
-                    Text(board.checkToastMessage)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.red.opacity(0.8))
-                        .cornerRadius(10)
-                        .padding(.bottom, 100)
-                }
-                .transition(.move(edge: .bottom))
-                .animation(.easeInOut(duration: 0.3), value: board.showCheckToast)
-            }
+            // Toast notification (top right)
+            ToastView(message: messageManager.message, show: messageManager.show)
+                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: messageManager.show)
         }
         .padding()
+        .onAppear {
+            board.showMessage = { msg in
+                messageManager.showMessage(msg)
+            }
+        }
         .sheet(isPresented: $showSettings) {
-            SettingsView(settings: settings, onResetBoard: { board.setupBoard() })
+            SettingsView(settings: settings, onResetBoard: {
+                board.setupBoard()
+                messageManager.showMessage("Board reset.")
+            })
         }
     }
     
     private func handleSquareTap(at position: Position) {
         if let selectedPiece = board.selectedPiece {
             if board.validMoves.contains(where: { $0.row == position.row && $0.col == position.col }) {
-                board.movePiece(from: selectedPiece, to: position)
+                let captured = board.movePiece(from: selectedPiece, to: position)
+                if let capturedPiece = captured {
+                    messageManager.showMessage("Captured a \(capturedPiece.imageName.capitalized.replacingOccurrences(of: "_", with: " "))!")
+                }
             } else {
+                messageManager.showMessage("Unavailable position.")
                 board.selectedPiece = nil
                 board.validMoves = []
             }
