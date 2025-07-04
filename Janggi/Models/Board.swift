@@ -17,7 +17,7 @@ class Board: ObservableObject {
     @Published var pieces: [[Piece?]] = Array(repeating: Array(repeating: nil, count: 9), count: 10)
     @Published var isRedTurn: Bool = true
     @Published var gameState: GameState = .playing
-    @Published var selectedPiece: Position?
+    @Published var selectedPiece: Piece?
     @Published var validMoves: [Position] = []
     @Published var capturablePieces: [Position] = []
     @Published var capturedRedPieces: [Piece] = []
@@ -26,6 +26,7 @@ class Board: ObservableObject {
     @Published var blueGeneralInCheck: Bool = false
     @Published var showMessage: ((String) -> Void)?
     var pieceCaptureEvent: ((Piece) -> Void)?
+    var moveAttemptEvent: ((Bool, String) -> Void)? // (success, message)
     
     init() {
         setupBoard()
@@ -113,17 +114,27 @@ class Board: ObservableObject {
         return pieces[position.row][position.col]
     }
     
-    func movePiece(from: Position, to: Position) -> Piece? {
+    func movePiece(from: Piece, to: Position) -> Piece? {
         // Check bounds for both positions
-        guard from.row >= 0 && from.row < pieces.count &&
-              from.col >= 0 && from.col < pieces[0].count &&
-              to.row >= 0 && to.row < pieces.count &&
+        guard to.row >= 0 && to.row < pieces.count &&
               to.col >= 0 && to.col < pieces[0].count else {
+            moveAttemptEvent?(false, "Not a valid move.")
             return nil
         }
         
-        guard let piece = pieces[from.row][from.col],
-              piece.isRed == isRedTurn else { return nil }
+        let piece = from
+        guard piece.isRed == isRedTurn else {
+            moveAttemptEvent?(false, "Not a valid move.")
+            return nil
+        }
+        
+        // Check if the move is valid
+        let valid = validMoves(for: piece).contains(where: { $0.row == to.row && $0.col == to.col })
+        if !valid {
+            moveAttemptEvent?(false, "Not a valid move.")
+            // Do NOT clear selection or valid moves
+            return nil
+        }
         
         // Store the captured piece if any
         let capturedPiece = pieces[to.row][to.col]
@@ -141,10 +152,10 @@ class Board: ObservableObject {
         
         // Move the piece
         pieces[to.row][to.col] = piece
-        pieces[from.row][from.col] = nil
+        pieces[piece.currentPosition.row][piece.currentPosition.col] = nil
         piece.currentPosition = to
         
-        // Only toggle turn after successful move (no automatic check detection)
+        // Only toggle turn after successful move
         isRedTurn.toggle()
         
         // Clear selection and valid moves
@@ -152,20 +163,19 @@ class Board: ObservableObject {
         validMoves = []
         capturablePieces = []
         
+        moveAttemptEvent?(true, "Moved piece.")
         return capturedPiece
     }
     
-    func selectPiece(at position: Position) {
-        guard let piece = pieceAt(position), piece.isRed == isRedTurn else {
+    func selectPiece(_ piece: Piece?) {
+        guard let piece = piece, piece.isRed == isRedTurn else {
             selectedPiece = nil
             validMoves = []
             capturablePieces = []
             return
         }
-        
-        selectedPiece = position
+        selectedPiece = piece
         validMoves = validMoves(for: piece)
-        
         // Identify capturable pieces (opponent pieces that can be captured)
         capturablePieces = validMoves.compactMap { movePosition in
             if let targetPiece = pieceAt(movePosition), targetPiece.isRed != piece.isRed {
@@ -347,15 +357,17 @@ class Board: ObservableObject {
                     for move in moves {
                         // Try the move
                         let originalPosition = piece.currentPosition
-                        let capturedPiece = movePiece(from: originalPosition, to: move)
+                        let capturedPiece = movePiece(from: piece, to: move)
                         
                         // Check if the move would put or leave the general in check
                         let wouldBeInCheck = isGeneralInCheck(for: color)
                         
                         // Undo the move
-                        _ = movePiece(from: move, to: originalPosition)
-                        if let captured = capturedPiece {
-                            placePiece(captured, at: move)
+                        if let movedPiece = pieceAt(move) {
+                            _ = movePiece(from: movedPiece, to: originalPosition)
+                            if let captured = capturedPiece {
+                                placePiece(captured, at: move)
+                            }
                         }
                         
                         if !wouldBeInCheck {

@@ -89,7 +89,7 @@ struct GameView: View {
                         .fill(Color(red: 0.8, green: 0.7, blue: 0.5))
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(Color(.darkGray), lineWidth: 6)
-                    BoardView(board: board, settings: settings, squareSize: squareSize)
+                    BoardView(board: board, settings: settings, squareSize: squareSize, onSquareTap: handleSquareTap)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .padding(24)
@@ -157,6 +157,11 @@ struct GameView: View {
             board.pieceCaptureEvent = { capturedPiece in
                 messageManager.showMessage("Captured a \(capturedPiece.imageName.capitalized.replacingOccurrences(of: "_", with: " "))!")
             }
+            board.moveAttemptEvent = { success, message in
+                if !success {
+                    messageManager.showMessage(message)
+                }
+            }
         }
         .sheet(isPresented: $showSettings) {
             SettingsView(settings: settings, onResetBoard: {
@@ -169,29 +174,20 @@ struct GameView: View {
     private func handleSquareTap(at position: Position) {
         let tappedPiece = board.pieceAt(position)
         let isCurrentPlayersPiece = tappedPiece?.isRed == board.isRedTurn
-        let isOpponentPiece = tappedPiece != nil && tappedPiece?.isRed != board.isRedTurn
-        let isEmpty = tappedPiece == nil
         
         if let selected = board.selectedPiece {
-            let selectedPiece = board.pieceAt(selected)
-            // If tapping your own piece, change selection
-            if isCurrentPlayersPiece {
-                board.selectPiece(at: position)
+            if isCurrentPlayersPiece, let tapped = tappedPiece {
+                // Change selection to the new piece
+                board.selectPiece(tapped)
             } else {
-                // Tapping opponent or empty: try to move
-                if board.validMoves.contains(where: { $0.row == position.row && $0.col == position.col }) {
-                    _ = board.movePiece(from: selected, to: position)
-                } else {
-                    messageManager.showMessage("Not a valid move.")
-                    // Keep selection so user can try again
-                }
+                // Always try to move, let Board handle validity and events
+                _ = board.movePiece(from: selected, to: position)
+                // If move is invalid, selection is kept
             }
         } else {
-            // No piece selected yet
-            if isCurrentPlayersPiece {
-                board.selectPiece(at: position)
+            if isCurrentPlayersPiece, let tapped = tappedPiece {
+                board.selectPiece(tapped)
             } else {
-                // Ignore taps on opponent pieces or empty squares
                 messageManager.showMessage("Select one of your own pieces to move.")
             }
         }

@@ -6,31 +6,39 @@ struct PieceGridView: View {
     let grid: GridGeometry
     let onSquareTap: (Position) -> Void
     
-    var body: some View {
-        ForEach(0..<grid.rows) { row in
-            ForEach(0..<grid.columns) { col in
+    private var pieceViews: some View {
+        ForEach(Array(0..<grid.rows), id: \.self) { row in
+            ForEach(Array(0..<grid.columns), id: \.self) { col in
                 if let piece = board.pieces[row][col] {
-                    let y = CGFloat(row) * grid.cellSize
-                    let x = CGFloat(col) * grid.cellSize
-                    
-                    // Check if this piece is a general in check
-                    let isInCheck = (piece.imageName == "red_general" && board.redGeneralInCheck) ||
-                                   (piece.imageName == "blue_general" && board.blueGeneralInCheck)
-                    
-                    // Check if this piece is selected
-                    let isSelected = board.selectedPiece?.row == row && board.selectedPiece?.col == col
-                    
-                    // Check if this piece is capturable
-                    let isCapturable = board.capturablePieces.contains(where: { $0.row == row && $0.col == col })
-                    
-                    PieceView(piece: piece, settings: settings, isInCheck: isInCheck, isSelected: isSelected, isCapturable: isCapturable)
-                        .position(x: x, y: y)
-                        .onTapGesture {
-                            onSquareTap(Position(row: row, col: col))
-                        }
+                    pieceView(for: piece, at: Position(row: row, col: col))
                 }
             }
         }
+    }
+    
+    private func pieceView(for piece: Piece, at position: Position) -> some View {
+        let y = CGFloat(position.row) * grid.cellSize
+        let x = CGFloat(position.col) * grid.cellSize
+        
+        // Check if this piece is a general in check
+        let isInCheck = (piece.imageName == "red_general" && board.redGeneralInCheck) ||
+                       (piece.imageName == "blue_general" && board.blueGeneralInCheck)
+        
+        // Check if this piece is selected
+        let isSelected = board.selectedPiece?.currentPosition == position
+        
+        // Check if this piece is capturable
+        let isCapturable = board.capturablePieces.contains(where: { $0 == position })
+        
+        return PieceView(piece: piece, settings: settings, isInCheck: isInCheck, isSelected: isSelected, isCapturable: isCapturable)
+            .position(x: x, y: y)
+            .onTapGesture {
+                onSquareTap(position)
+            }
+    }
+    
+    var body: some View {
+        pieceViews
     }
 }
 

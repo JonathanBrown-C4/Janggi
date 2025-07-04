@@ -25,18 +25,35 @@ struct PieceView: View {
         Group {
             if settings.useTraditionalPieces {
                 // Traditional piece images
-                Image(piece.imageName)
-                    .resizable()
-                    .scaledToFit()
-                    .padding(6)
-                    .frame(width: piece.size.size, height: piece.size.size)
-                    .background(Hexagon().fill(backgroundColor))
-                    .clipShape(Hexagon())
-                    .overlay(
-                        Hexagon()
-                            .stroke(outlineColor, lineWidth: outlineWidth)
-                    )
-                    .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: 0)
+                if piece.type == .general {
+                    Image(piece.imageName)
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(6)
+                        .frame(width: piece.size.size, height: piece.size.size)
+                        .foregroundColor(piece.isRed ? .red : .blue)
+                        .background(Hexagon().fill(backgroundColor))
+                        .clipShape(Hexagon())
+                        .overlay(
+                            Hexagon()
+                                .stroke(outlineColor, lineWidth: outlineWidth)
+                        )
+                        .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: 0)
+                } else {
+                    Image(piece.imageName)
+                        .resizable()
+                        .scaledToFit()
+                        .padding(6)
+                        .frame(width: piece.size.size, height: piece.size.size)
+                        .background(Hexagon().fill(backgroundColor))
+                        .clipShape(Hexagon())
+                        .overlay(
+                            Hexagon()
+                                .stroke(outlineColor, lineWidth: outlineWidth)
+                        )
+                        .shadow(color: shadowColor, radius: shadowRadius, x: 0, y: 0)
+                }
             } else {
                 // Minimalist icon pieces
                 MinimalistPieceView(piece: piece, isRed: piece.isRed)

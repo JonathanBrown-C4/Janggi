@@ -58,8 +58,8 @@ struct BoardGridView: View {
                 }
                 
                 // Draw selected piece indicator (only if move hints are enabled)
-                if settings.showMoveHints, let selectedPosition = board.selectedPiece {
-                    let pos = grid.point(for: selectedPosition)
+                if settings.showMoveHints, let selectedPiece = board.selectedPiece {
+                    let pos = grid.point(for: selectedPiece.currentPosition)
                     Circle()
                         .fill(Color.yellow.opacity(0.6))
                         .overlay(
